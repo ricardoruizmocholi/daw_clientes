@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+    <script>
+
+        /*
+         1) Crea un script en JavaScript que:
+            • Lea el archivo meses.json.
+            • Recorra todos los meses y todos los días de cada mes.
+            • Al inicio de cada mes se tiene que añadir:
+            ---◦ ¡Empezamos X! (nombre del mes)
+            ---◦ Un salto de línea
+            • Por cada día, imprima en consola el mensaje:
+            “Hoy es el día Y de X.”
+            • Al final de cada mes se tiene añadir:
+            ◦ Un salto de línea
+            ◦ “Ya hemos pasado Z meses de este año”
+            ◦ Otro salto de línea
+            ---• Define un objeto llamado cumpleaños que sea del tipo constante.
+           --- ◦ Este objeto tiene que tener las mismas propiedades que los objetos del archivo 
+            meses.json
+            ---◦ El mes y día de la constante sea el de tu cumpleaños
+            • Si el día actual coincide con el cumpleaños, el mensaje debe ser reemplazado por:
+            ¡Hoy es el día X de Y y es mi cumpleaños
+        
+        
+        */
+
+
+        //usamos fetch para leer el archivo json 
+        fetch("meses.json")
+        .then(archivo => archivo.json())
+        .then(meses =>{ //aqui se ejecuta la funcion para el resto de la actividad una vez que cargado el json
+
+            const cumpleaños={mes : "Octubre", dias:22};
+            let mesesPasados = 0;
+
+            for(let i = 0; i < meses.length; i++){
+
+                const mes = meses[i];
+
+                document.write(`¡Empezamos el mes de ${mes.mes}!!<br><br>`);
+
+                for(let dia = 1; dia <= mes.dias; dia++){
+                    if(mes.mes === cumpleaños.mes && dia === cumpleaños.dias){
+                        document.write(`¡Hoy es el día ${dia} de ${mes.mes} y es mi cumpleaños!!<br><br>`);
+                    } else {
+                        document.write(`Hoy es el día ${dia} de ${mes.mes}!!<br><br>`);
+                    }
+                }
+
+                mesesPasados++;
+                document.write(`<br>Ya hemos pasado ${mesesPasados} meses de este año<br><br>`);
+            }
+
+
+
+
+        })
+    </script>
+    
+</body>
+</html>
