@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Formulario con Cookies y LocalStorage</title>
+  <script>
+    var miPopup;
+
+    // Función general para abrir ventanas emergentes
+    function abreVentana(archivo) {
+      miPopup = window.open(
+        archivo,
+        "miPopup",
+        "width=400,height=300,scrollbars=no,resizable=no"
+      );
+      miPopup.focus();
+    }
+
+    // ==========================
+    // FUNCIONES DE COOKIES
+    // ==========================
+    function crearCookie(nombre, valor, dias) {
+      var fecha = new Date();
+      fecha.setTime(fecha.getTime() + (dias * 24 * 60 * 60 * 1000));
+      var expira = "expires=" + fecha.toUTCString();
+      document.cookie = nombre + "=" + encodeURIComponent(valor) + ";" + expira + ";path=/";
+    }
+
+    function leerCookie(nombre) {
+      var nombreEQ = nombre + "=";
+      var ca = document.cookie.split(';');
+      for (var i = 0; i < ca.length; i++) {
+        var c = ca[i].trim();
+        if (c.indexOf(nombreEQ) === 0) return decodeURIComponent(c.substring(nombreEQ.length, c.length));
+      }
+      return null;
+    }
+
+    // Función para recibir y guardar el nombre de usuario desde el popup
+    function recibirUsuario(nombreUsuario) {
+      if (nombreUsuario.trim() === "") {
+        alert("❌ El nombre de usuario no puede estar vacío.");
+        return;
+      }
+      crearCookie("nombreUsuario", nombreUsuario, 7); // caduca en 7 días
+      document.formPrincipal.usuario.value = nombreUsuario;
+      alert("✅ Usuario guardado en cookie.");
+    }
+
+    // ==========================
+    // FUNCIONES LOCALSTORAGE
+    // ==========================
+    function recibirEmail(email) {
+      if (email.trim() === "") {
+        alert("❌ El email no puede estar vacío.");
+        return;
+      }
+      localStorage.setItem("emailUsuario", email);
+      document.formPrincipal.email.value = email;
+      alert("✅ Email guardado en localStorage.");
+    }
+
+    // ==========================
+    // CARGA INICIAL DE DATOS
+    // ==========================
+    window.onload = function() {
+      // Comprobar cookie "nombreUsuario"
+      var usuario = leerCookie("nombreUsuario");
+      if (usuario) {
+        document.formPrincipal.usuario.value = usuario;
+      } else {
+        document.formPrincipal.usuario.value = "Sesión no iniciada";
+      }
+
+      // Comprobar localStorage "emailUsuario"
+      var email = localStorage.getItem("emailUsuario");
+      if (email) {
+        document.formPrincipal.email.value = email;
+      } else {
+        document.formPrincipal.email.value = "Sesión no iniciada";
+      }
+    };
+  </script>
+</head>
+<body>
+  <h1>Formulario de Usuario</h1>
+
+  <form name="formPrincipal">
+    <table cellpadding="5">
+      <!-- Nombre de Usuario (Cookies) -->
+      <tr>
+        <td><strong>Nombre de Usuario (Cookies):</strong></td>
+        <td>
+          <input type="text" name="usuario" size="25" readonly>
+          <input type="button" value="?" onclick="abreVentana('usuario.html')">
+        </td>
+      </tr>
+
+      <!-- Email (LocalStorage) -->
+      <tr>
+        <td><strong>Email (LocalStorage):</strong></td>
+        <td>
+          <input type="text" name="email" size="25" readonly>
+          <input type="button" value="?" onclick="abreVentana('email.html')">
+        </td>
+      </tr>
+    </table>
+  </form>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Formulario prefijos</title>
+  <script>
+    var miPopup;
+
+    // Ahora la función abreVentana recibe el nombre del archivo que debe abrir
+    function abreVentana(archivo) {
+      miPopup = window.open(
+        archivo,
+        "miwin",
+        "width=400,height=250,scrollbars=yes"
+      );
+      miPopup.focus();
+    }
+  </script>
+</head>
+<body>
+  <h1>Formulario con campos interactivos</h1>
+
+  <form name="formul">
+    <table cellspacing="5" cellpadding="5" border="0">
+      <tr>
+        <th>Campo</th>
+        <th>Valor</th>
+      </tr>
+
+      <!-- Campo Prefijo -->
+      <tr>
+        <td>Prefijo</td>
+        <td>
+          <input type="text" name="prefijo" value="+" size="3" maxlength="3">
+          <input type="button" value="?" onclick="abreVentana('prefijos.html')">
+        </td>
+      </tr>
+
+      <!-- Campo Número -->
+      <tr>
+        <td>Número</td>
+        <td>
+          <input type="text" name="numero" size="10" maxlength="10">
+        </td>
+      </tr>
+
+      <!-- Campo Capital -->
+      <tr>
+        <td>Capital</td>
+        <td>
+          <input type="text" name="capital" size="15" readonly>
+          <input type="button" value="?" onclick="abreVentana('capitales.html')">
+        </td>
+      </tr>
+
+      <!-- Campo Moneda -->
+      <tr>
+        <td>Moneda</td>
+        <td>
+          <input type="text" name="moneda" size="15" readonly>
+          <input type="button" value="?" onclick="abreVentana('monedas.html')">
+        </td>
+      </tr>
+    </table>
+  </form>
+</body>
+</html>

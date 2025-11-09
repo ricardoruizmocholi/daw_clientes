@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Formulario Usuario</title>
+  <script>
+    var miPopup;
+
+    // Función para abrir el popup auxiliar
+    function abreVentana() {
+      miPopup = window.open(
+        "datosUsuario.html",
+        "popupDatos",
+        "width=400,height=300,scrollbars=no,resizable=no"
+      );
+      miPopup.focus();
+    }
+
+    // Función para recibir los datos desde el popup
+    function recibirDatos(nombre, apellido) {
+      // Comprobamos que los datos no estén vacíos ni contengan solo espacios
+      if (nombre.trim() === "" || apellido.trim() === "") {
+        alert("❌ Los datos no son válidos. Por favor, introduce nombre y apellido.");
+        return false;
+      } else {
+        // Si todo es correcto, se rellenan los campos del formulario principal
+        document.formUsuario.nombre.value = nombre;
+        document.formUsuario.apellido.value = apellido;
+        alert("✅ Datos añadidos correctamente al formulario principal.");
+        return true;
+      }
+    }
+  </script>
+</head>
+
+<body>
+  <h1>Formulario de Usuario</h1>
+
+  <form name="formUsuario">
+    <table cellpadding="5">
+      <tr>
+        <td>Nombre:</td>
+        <td>
+          <input type="text" name="nombre" size="20">
+          <input type="button" value="?" onclick="abreVentana()">
+        </td>
+      </tr>
+      <tr>
+        <td>Apellido:</td>
+        <td><input type="text" name="apellido" size="20"></td>
+      </tr>
+    </table>
+  </form>
+</body>
+</html>

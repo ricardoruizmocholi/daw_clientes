@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Editar Email</title>
+  <script>
+    function guardarEmail() {
+      var email = prompt("Introduce tu dirección de correo electrónico:");
+
+      if (email === null) {
+        alert("❌ Operación cancelada.");
+        return;
+      }
+
+      // Validar formato básico de email
+      var patron = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+      if (!patron.test(email)) {
+        alert("⚠️ Introduce un email válido.");
+        return;
+      }
+
+      var confirmar = confirm("¿Deseas guardar el email: " + email + "?");
+      if (confirmar) {
+        opener.recibirEmail(email); // enviar a la ventana principal
+        window.close();
+      } else {
+        alert("Operación cancelada. Puedes volver a intentarlo.");
+      }
+    }
+  </script>
+</head>
+<body>
+  <h2>Gestión de Email</h2>
+  <p>Haz clic en el botón para introducir o modificar tu email.</p>
+  <button onclick="guardarEmail()">Introducir / Modificar</button>
+</body>
+</html>

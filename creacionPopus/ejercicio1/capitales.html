@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Capitales del mundo</title>
+  <script>
+    function ponCapital(nombreCapital) {
+      opener.document.formul.capital.value = nombreCapital;
+      window.close();
+    }
+  </script>
+</head>
+<body>
+  <h1>Selecciona una capital</h1>
+  <form name="fcapitales">
+    España:
+    <input type="button" value="Madrid" onclick="ponCapital('Madrid')"><br>
+    Francia:
+    <input type="button" value="París" onclick="ponCapital('París')"><br>
+    Italia:
+    <input type="button" value="Roma" onclick="ponCapital('Roma')"><br>
+    Alemania:
+    <input type="button" value="Berlín" onclick="ponCapital('Berlín')"><br>
+    Portugal:
+    <input type="button" value="Lisboa" onclick="ponCapital('Lisboa')"><br>
+  </form>
+</body>
+</html>

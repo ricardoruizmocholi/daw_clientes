@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Datos del Usuario</title>
+  <script>
+    var nombre = "";
+    var apellido = "";
+
+    function pedirDatos() {
+      nombre = prompt("Introduce tu nombre:");
+      apellido = prompt("Introduce tu apellido:");
+
+      if (nombre === null || apellido === null) {
+        alert("❌ Operación cancelada. No se introdujeron datos.");
+        return;
+      }
+
+      // Mostrar los datos en pantalla
+      document.getElementById("resultado").innerHTML =
+        "<p><strong>Nombre:</strong> " + nombre + "<br><strong>Apellido:</strong> " + apellido + "</p>";
+
+      // Mostrar botón de continuar
+      document.getElementById("continuarBtn").style.display = "inline-block";
+    }
+
+    function confirmarDatos() {
+      var confirmar = confirm("¿Deseas enviar estos datos al formulario principal?");
+
+      if (confirmar) {
+        // Si confirma, enviar datos al formulario principal
+        opener.recibirDatos(nombre, apellido);
+        window.close();
+      } else {
+        // Si cancela, permitir modificar los datos otra vez
+        alert("Puedes volver a introducir los datos.");
+        document.getElementById("resultado").innerHTML = "";
+        document.getElementById("continuarBtn").style.display = "none";
+        pedirDatos(); // Volvemos a pedir los datos
+      }
+    }
+  </script>
+</head>
+
+<body>
+  <h2>Ventana de datos del usuario</h2>
+
+  <button onclick="pedirDatos()">Introducir datos</button>
+
+  <div id="resultado" style="margin-top:10px;"></div>
+
+  <button id="continuarBtn" style="display:none; margin-top:10px;" onclick="confirmarDatos()">Continuar</button>
+</body>
+</html>

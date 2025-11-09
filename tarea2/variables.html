@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        // declaración de variables
+        let nombre = prompt("Introduce tu nombre:");
+        let producto= prompt("Introduce el producto que quieres comprar:");
+        let precio = prompt("Introduce el precio del producto");
+        let cantidad = prompt("Introduce la cantidad del producto");
+        let socio = prompt("¿Eres socio?");
+        let categoria = prompt("El producto es vegano o sin gluten");
+        let descuento = null;
+
+        //comprovación de valores nulos
+
+        if(isNaN(producto)){
+            console.warn(" No has intodugido ningun nombre de producto")
+        }
+        if(isNaN(precio)){
+
+            precio =0;
+            console.warn(" No has intodugiste ningun precio al producto")
+
+        }
+        if(isNaN(cantidad)){
+            cantidad =1;
+            console.warn(" No has intodugiste la cantidad al producto que quiere comprar")
+
+        }
+        // uso de var y let
+        if(true){
+            var mensaje="Esto es una variable var";
+            let alerta ="Esto es una variable let";
+            console.log (alerta);
+        }
+            console.log (mensaje);//la variable var funciona fuera del bloque que se a inicializado mienstas que let no solo tiene alcance para el bloque se inicializa
+
+       //Manejo de variables undefined y null
+       let intolerancia ;
+       let codigoDescuento = null;
+
+       console.log("Tipo de variable intoleracia: ", typeof intolerancia);
+       console.log("Tipo de variable codigoDescuento: ", typeof codigoDescuento);
+
+        console.log("Comparación con == :", intolerancia == codigoDescuento); // dará true ya que ambos carecen de valor
+        console.log("Comparación con === :", intolerancia === codigoDescuento);// dará false deibido a que compara el tipo de dato
+            
+
+        //Operaciones aritméticas
+
+        let subtotal = precio * cantidad;
+         descuento = 0;
+
+        // Descuento base del 10% si el subtotal > 100 €
+        if (subtotal > 100) {
+        descuento += subtotal * 0.10;
+        }
+
+        // Si pertenece al Club EcoVida → +5% sobre el precio ya descontado
+        if (socio) {
+        let descuentoSocio = (subtotal - descuento) * 0.05;
+        descuento += descuentoSocio;
+        }
+
+        // Si compra más de 10 unidades → +3% adicional acumulativo
+        if (cantidad > 10) {
+        let descuentoCantidad = (subtotal - descuento) * 0.03;
+        descuento += descuentoCantidad;
+        }
+
+        // Precio final después de los descuentos
+        let totalFinal = subtotal - descuento;
+
+        if (categoria) {
+            console.log(" Gracias por elegir un producto responsable y sostenible.");
+        }
+
+        //Salida de datos
+
+        console.log(" Cliente:", nombre);
+        console.log(" Producto:", producto);
+        console.log(" Precio total antes de descuento:", subtotal, "€");
+        console.log(" Total de descuentos aplicados:", descuento, "€");
+        console.log(" Precio final:", totalFinal, "€");
+        
+        if (socio && subtotal > 100 && cantidad > 10) {
+        console.log(" Gracias por apoyar un consumo responsable. Has obtenido el mayor descuento disponible.");
+        } else {
+        console.log(" Tu compra es saludable y sostenible. Gracias por elegir EcoVida.");
+        }
+    
+    </script>
+    
+</body>
+</html>

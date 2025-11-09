@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Monedas del mundo</title>
+  <script>
+    function ponMoneda(nombre, simbolo) {
+      // Inserta en el campo moneda el nombre + símbolo
+      opener.document.formul.moneda.value = nombre + " (" + simbolo + ")";
+      window.close();
+    }
+  </script>
+</head>
+<body>
+  <h1>Selecciona una moneda</h1>
+  <form name="fmonedas">
+    España:
+    <input type="button" value="Euro (€)" onclick="ponMoneda('Euro', '€')"><br>
+    EE.UU.:
+    <input type="button" value="Dólar ($)" onclick="ponMoneda('Dólar', '$')"><br>
+    Japón:
+    <input type="button" value="Yen (¥)" onclick="ponMoneda('Yen', '¥')"><br>
+    Reino Unido:
+    <input type="button" value="Libra (£)" onclick="ponMoneda('Libra', '£')"><br>
+    Suiza:
+    <input type="button" value="Franco (CHF)" onclick="ponMoneda('Franco', 'CHF')">
+  </form>
+</body>
+</html>

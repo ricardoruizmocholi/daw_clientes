@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Editar nombre de usuario</title>
+  <script>
+    function guardarUsuario() {
+      var nombre = prompt("Introduce tu nombre de usuario:");
+
+      if (nombre === null) {
+        alert("❌ Operación cancelada.");
+        return;
+      }
+
+      if (nombre.trim() === "") {
+        alert("⚠️ Debes introducir un nombre válido.");
+        return;
+      }
+
+      var confirmar = confirm("¿Deseas guardar el nombre de usuario: " + nombre + "?");
+      if (confirmar) {
+        opener.recibirUsuario(nombre); // enviar al formulario principal
+        window.close();
+      } else {
+        alert("Operación cancelada. Puedes volver a intentarlo.");
+      }
+    }
+  </script>
+</head>
+<body>
+  <h2>Gestión de nombre de usuario</h2>
+  <p>Haz clic en el botón para introducir o modificar tu nombre de usuario.</p>
+  <button onclick="guardarUsuario()">Introducir / Modificar</button>
+</body>
+</html>
