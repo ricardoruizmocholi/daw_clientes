@@ -1,0 +1,9 @@
+1) Crea una array de objetos que contenga una lista de nombres de webs y sus respectivos enlaces.
+
+2) Dibuja esta lista de manera dinámica en una tabla
+
+3) Genera un iframe invisible
+
+4) Añade a la tabla una columna con botones que vuelvan visible el iframe y cambien el contenido que muestra por el de la web que contienen
+
+AMPLIACIÓN) Añade un formulario que permita añadir nuevas webs a la página. Utiliza un regex para comprobar que la web introducida tiene el formato correcto.
