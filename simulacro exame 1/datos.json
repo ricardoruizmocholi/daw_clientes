@@ -1,0 +1,5 @@
+[
+  { "nombre": "Carlos Gómez", "activo": true },
+  { "nombre": "Laura Martínez", "activo": false },
+  { "nombre": "María López", "activo": true }
+]

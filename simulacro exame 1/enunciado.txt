@@ -1,0 +1,123 @@
+Enunciado: Panel de Control de Usuarios (entregable: /panel/)
+
+Crea una web llamada panel.html (y sus ficheros asociados) que haga de panel de control de una aplicación (p. ej. “Gestor de usuarios”). El objetivo es demostrar maquetación, interacción DOM, carga dinámica desde JSON, manejo de almacenamiento y ventanas, validación con RegExp y uso de APIs de window.
+
+Entregables (estructura de carpeta)
+/panel/
+ ├── panel.html
+ ├── estilo.css        (opcional: puede incluirse dentro de panel.html)
+ └── datos.json
+
+Requisitos obligatorios
+1) Estructura y maquetación (Subunidades 001, 009, 010)
+
+panel.html debe contener:
+
+Un <header> con el título del panel y un menú horizontal (mínimo 3 opciones).
+
+Un <main> dividido en dos zonas:
+
+aside (columna lateral) con botones/enlaces.
+
+section (zona principal) con el listado dinámico.
+
+Un <footer> con autor o contacto.
+
+Usa Flexbox o Grid para la distribución.
+
+2) Estilo visual coherente (Subunidad 002)
+
+Define 2 colores corporativos (primario y secundario) mediante variables CSS.
+
+Usa una tipografía personalizada (Google Fonts o @font-face).
+
+Menú y botones con estilos uniformes y legibles.
+
+Añade iconos o emojis para mejorar la comunicación visual.
+
+3) Interacción (Subunidades 003 y 006)
+
+Incluye un botón “➕ Añadir elemento” que abra un modal (o bloque emergente) con un formulario:
+
+Campo de texto (p. ej. “Nombre del usuario”).
+
+Botón Guardar y botón Cancelar.
+
+Validación básica usando RegExp: si el campo está vacío o no cumple, mostrar aviso (ej. alert() o borde rojo).
+
+Al guardar, el nuevo elemento debe añadirse al listado (dinámicamente en el DOM).
+
+Implementa también el uso de window.alert(), window.confirm() y window.prompt() en alguna acción (p. ej. confirmar borrado o renombrar).
+
+4) Carga de datos dinámica (Subunidades 005 y 007)
+
+Crea datos.json con 3 objetos de ejemplo (usuarios, tareas o productos). Ejemplo de estructura:
+
+[
+  { "nombre": "Ana", "activo": true },
+  { "nombre": "Luis", "activo": false },
+  { "nombre": "María", "activo": true }
+]
+
+
+Usa fetch() en JavaScript para cargar datos.json al abrir la página y renderizar los elementos (si prefieres PHP, puedes leer el JSON y generar HTML en servidor; por defecto pediré JS).
+
+Muestra los elementos en tarjetas o tabla en la zona principal.
+
+5) Funcionalidad extra con ventanas y objetos window (nuevo requisito)
+
+Incluye una acción que abra una ventana nueva o popup usando window.open():
+
+Por ejemplo, al pulsar “Ver detalle” sobre un usuario, abrir una ventana nueva con información detallada (puede ser una pequeña página generada dinámicamente con document.write() o pasando parámetros en la URL).
+
+La ventana creada con window.open() debe poder comunicarse con la ventana principal (p. ej. usando window.opener para cerrar la ventana hija o enviar datos) o al menos mostrar información basada en parámetros.
+
+Documenta en comentarios cómo se usa window.open() y qué se espera que haga la ventana hija.
+
+6) Persistencia y APIs del navegador
+
+Implementa localStorage para guardar el listado actualizado (cada vez que añadas o borres usuarios se sincroniza).
+
+Incluye un botón para guardar una cookie con algún dato simple (p. ej. usuario=demo) y otro botón para borrar cookies y/o localStorage.
+
+Usa un switch en algún flujo de control (p. ej. al aplicar filtros del menú: todos/activos/inactivos).
+
+7) Mini guía de estilo y navegación interna (Subunidades 004 y 008)
+
+Al principio de panel.html incluye un pequeño comentario HTML con la mini guía de estilo: colores, tipografía, reglas pequeñas de diseño.
+
+Implementa una mini navegación funcional que permita filtrar o mostrar partes del contenido (por ejemplo botones del header que filtren por estado usando switch).
+
+Puntos de evaluación (qué se corregirá)
+
+Estructura correcta en HTML (header, main con aside/section, footer).
+
+Maquetación con Flexbox o Grid (respetando responsividad básica).
+
+Estética: uso de variables CSS, tipografía y consistencia visual.
+
+Carga dinámica: fetch() lee datos.json y muestra los datos.
+
+Interactividad: modal de añadir, validación con RegExp, añadir/borrar/editar en DOM.
+
+Uso de APIs: localStorage, cookies, window.alert/confirm/prompt, window.open.
+
+Comunicación ventana principal ↔ ventana abierta (mínimo: ventana hija lee parámetros y/o usa window.opener).
+
+Código limpio y comentado (explicar window.open y uso de RegExp).
+
+Reglas y restricciones
+
+No se permiten librerías externas (salvo Google Fonts). Todo en vanilla JS/CSS/HTML.
+
+El modal puede ser hecho con HTML/CSS puro (no alert() para el formulario).
+
+El uso de window.open() debe ser práctico (no sólo llamada sin efecto). Debe abrir una ventana con contenido relacionado al elemento seleccionado.
+
+Bonus (puntos extra)
+
+Implementar drag & drop para reordenar tarjetas.
+
+Exportar/Importar lista en JSON (descarga/subida).
+
+Comunicación avanzada entre ventana principal y ventana hija (postMessage).

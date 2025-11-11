@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Detalle del Usuario</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 1rem;
+      background: #f9f9f9;
+    }
+    h2 { color: #0078d7; }
+    button {
+      background: #0078d7;
+      color: white;
+      border: none;
+      padding: .5rem 1rem;
+      border-radius: .5rem;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h2>Detalle del usuario</h2>
+  <p id="info"></p>
+  <button onclick="cerrar()">Cerrar</button>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const nombre = params.get('nombre');
+    const activo = params.get('activo') === 'true';
+    document.getElementById('info').innerText = 
+      `Nombre: ${nombre}\nEstado: ${activo ? 'Activo ✅' : 'Inactivo ❌'}`;
+
+    function cerrar() {
+      if (window.opener) {
+        alert('Volviendo al panel principal');
+        window.close();
+      }
+    }
+  </script>
+</body>
+</html>

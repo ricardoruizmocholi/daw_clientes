@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="estilo.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <header>
+        <h1>Panel de usuarios</h1>
+        <nav>
+            <ul>
+                <li><button class="nav-btn" data-filtor = "todos">Todos</button></li>
+                <li><button class="nav-btn" data-filtor = "activos">Activos</button></li>
+                <li><button class="nav-btn" data-filtor = "inactivos">Inactivos</button></li>
+            </ul>
+        </nav>
+
+    </header>
+    <main>
+        <aside>
+            <button id="btnAdd"> Añadir usuario</button>
+            <button id="btnCookie">Guardar cookie</button>
+            <button id="btnStorage"> Limpiar almacenamiento</button>
+        </aside>
+
+        <section id="zonaPrincipal">
+            <h2>Listado de usuarios</h2>
+            <div id="listado" class="tarjetas"></div>
+        </section>
+    </main>
+    
+    <footer>
+        © 2025 Ricardo Ruiz — <a href="mailto:ricardoruizm99@gmail.com">Contacto</a>
+    </footer>
+
+    <!--Modal-->
+    <div id="modal" class="modal_oculto">
+        <div class="contenido_modal">
+            <h3></h3>
+            <input type="text" id="nombreInput" placeholder="Introduce un nombre">
+            <button id="guardarUsuario">Guardar</button>
+            <button id="cerrarModal">Cancelar</button>
+        </div>
+    </div>
+
+    <script>
+        // Variables 
+        const listado =  document.getElementById('listado');
+        const modal =  document.getElementById('modal');
+        const input =  document.getElementById('nombreInput');
+        let usuarios = [];
+
+        //Carga inicial de datos
+
+        fetch('datos.json')
+        .then(res => res.json())
+        .then(datos =>{
+            usuarios = datos;
+            mostrarUsuarios(usuarios);
+        })
+
+        //Renderizacion de los usuarios
+
+        function mostrarUsuarios(lista){
+            //vaciamos contenido de la seccion
+            listado.innerHTML = '';
+            lista.forEach(elemento => {
+                const carta = document.createElement('div');
+                carta.className = 'tarjeta';
+                carta.innerHTML = `
+                    <h3>${elemento.nombre}</h3>
+                    <p>Estado: <strong>${elemento.activo ? "Activo ✅" : "Inactivo ❌"}</strong></p>
+                    <div class="acciones">
+                        <button onclick="abrirVentana('${elemento.nombre}', ${elemento.activo})">🔍 Ver detalle</button>
+                        <button onclick="editarUsuario('${elemento.nombre}')">✏️ Editar</button>
+                        <button onclick="eliminarUsuario('${elemento.nombre}')">🗑️ Eliminar</button>
+                    </div>
+                `;
+                listado.appendChild(carta);
+            });
+        }
+
+        //=====Modal====
+        document.getElementById('btnAdd').onclick = ()=> modal.classList.remove('oculto');
+        document.getElementById('cerrarModal').onclick = ()=> modal.classList.add('oculto');
+
+        //----------Guardar nuevo usuario
+
+        document.getElementById('guardarUsuario').onclick = ()=>{
+            const nombre = input.value.trim();
+            const patron = /^[A-Za-zÁÉÍÓÚÑáéíóúñ ]{3,}$/;
+
+            if (!patron.test(nombre)){
+                input.style.border = '2px solid red';
+                alert ('❌ El nombre debe tener al menos 3 letras y solo caracteres válidos.');
+                return;
+            }
+
+            usuarios.push({nombre, activo:true});
+            localStorage.setItem('usuarios',JSON.stringify(usuarios));
+            mostrarUsuarios(usuarios);
+            input.value = '';
+            modal.classList.add('oculto');
+        }
+
+        //Editar usuario con prompt 
+
+        function editarUsuario(nombre){
+            const nuevo = prompt(`Nuevo nombre para ${nombre}`,nombre);
+            if( nuevo && nuevo.trim()!== ''){
+                usuarios = usuarios.map(elemento => elemento.nombre === nombre ? { ...elemento, nombre: nuevo} : elemento);
+                mostrarUsuarios(usuarios);
+            }
+        }
+
+        // Eliminar usuario con confirm
+
+        function eliminarUsuario(nombre){
+            if(confirm(`Seguro de elimianr a ${nombre}`)){
+                usuarios = usuarios.filter(u => u.nombre !== nombre);
+                mostrarUsuarios(usuarios);
+            }
+        }
+
+        //Filtrado con switch ==
+
+        document.querySelectorAll('nav-btn').forEach(boton =>{
+            boton.addEventListener('click', e=>{
+                const tipo = e.target.dataset.filtro;
+                switch(tipo){
+                    case 'todos':
+                        mostrarUsuarios(usuarios);
+                        break;
+                    case 'activos':
+                        mostrarUsuarios(usuarios.filter(u => u.activo));
+                        break;
+                    case 'inactivos':
+                        mostrarUsuarios(usuarios.filter(u => !u.activo));
+                        break;
+
+                }
+            });
+        });
+
+        // Cookies y almacenamiento 
+        document.getElementById('btnCookie').onclick = ()=>{
+            document.cookie = "usuario=Ricardo; max-age=3600";
+            alert("🍪 Cookie guardada por 1 hora.");
+        }
+        document.getElementById('btnStorage').onclick = () => {
+      if (confirm("¿Borrar LocalStorage y Cookies?")) {
+        localStorage.clear();
+        document.cookie.split(";").forEach(c => document.cookie = c.trim().split("=")[0] + "=;expires=" + new Date(0).toUTCString());
+        alert("✅ Todo borrado.");
+      }
+    };
+
+    // === Ventana nueva con window.open ===
+    function abrirVentana(nombre, activo) {
+      const ventana = window.open(
+        `detalle.html?nombre=${encodeURIComponent(nombre)}&activo=${activo}`,
+        "DetalleUsuario",
+        "width=400,height=300,resizable=no"
+      );
+    }
+
+
+    </script>
+</body>
+</html>
