@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de usuarios</title>
+  <link rel="stylesheet" href="estilo.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ===== ENCABEZADO ===== -->
+  <header>
+    <h1>Panel de usuarios</h1>
+    <nav>
+      <ul>
+        <!-- Botones con atributo data-filtro -->
+        <li><button class="nav-btn" data-filtro="todos">Todos</button></li>
+        <li><button class="nav-btn" data-filtro="activos">Activos</button></li>
+        <li><button class="nav-btn" data-filtro="inactivos">Inactivos</button></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- ===== CONTENIDO PRINCIPAL ===== -->
+  <main>
+    <aside>
+      <button id="btnAdd">➕ Añadir usuario</button>
+      <button id="btnCookie">🍪 Guardar cookie</button>
+      <button id="btnStorage">🧹 Limpiar almacenamiento</button>
+    </aside>
+
+    <section id="zonaPrincipal">
+      <h2>Listado de usuarios</h2>
+      <div id="listado" class="tarjetas"></div>
+    </section>
+  </main>
+
+  <!-- ===== PIE DE PÁGINA ===== -->
+  <footer>
+    © 2025 Ricardo Ruiz — <a href="mailto:ricardoruizm99@gmail.com">Contacto</a>
+  </footer>
+
+  <!-- ===== MODAL PARA AÑADIR USUARIO ===== -->
+  <div id="modal" class="modal_oculto">
+    <div class="contenido_modal">
+      <h3>Nuevo usuario</h3>
+      <input type="text" id="nombreInput" placeholder="Introduce un nombre">
+      <br>
+      <button id="guardarUsuario">Guardar</button>
+      <button id="cerrarModal">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- ===== SCRIPT PRINCIPAL ===== -->
+  <script>
+    // === VARIABLES GLOBALES ===
+    const listadoContenedor = document.getElementById('listado');
+    const modalContenedor = document.getElementById('modal');
+    const inputNombre = document.getElementById('nombreInput');
+
+    const botonAñadir = document.getElementById('btnAdd');
+    const botonGuardar = document.getElementById('guardarUsuario');
+    const botonCerrarModal = document.getElementById('cerrarModal');
+    const botonCookie = document.getElementById('btnCookie');
+    const botonLimpiar = document.getElementById('btnStorage');
+
+    let listaUsuarios = [];
+
+    // === CARGA INICIAL DE DATOS ===
+    const datosLocales = localStorage.getItem('usuarios');
+    if (datosLocales) {
+      listaUsuarios = JSON.parse(datosLocales);
+      mostrarUsuarios(listaUsuarios);
+    } else {
+      fetch('datos.json')
+        .then(res => res.json())
+        .then(datos => {
+          listaUsuarios = datos;
+          mostrarUsuarios(listaUsuarios);
+        });
+    }
+
+    // === FUNCIÓN PARA MOSTRAR LOS USUARIOS EN PANTALLA ===
+    function mostrarUsuarios(lista) {
+      listadoContenedor.innerHTML = ''; // limpia contenido
+      lista.forEach(usuario => {
+        const tarjeta = document.createElement('div');
+        tarjeta.className = 'tarjeta';
+        tarjeta.innerHTML = `
+          <h3>${usuario.nombre}</h3>
+          <p>Estado: <strong>${usuario.activo ? "Activo ✅" : "Inactivo ❌"}</strong></p>
+          <div class="acciones">
+            <button onclick="abrirVentana('${usuario.nombre}', ${usuario.activo})">🔍 Ver detalle</button>
+            <button onclick="editarUsuario('${usuario.nombre}')">✏️ Editar</button>
+            <button onclick="eliminarUsuario('${usuario.nombre}')">🗑️ Eliminar</button>
+          </div>
+        `;
+        listadoContenedor.appendChild(tarjeta);
+      });
+    }
+
+    // === MOSTRAR Y OCULTAR MODAL ===
+    botonAñadir.onclick = () => modalContenedor.classList.remove('modal_oculto');
+    botonCerrarModal.onclick = () => modalContenedor.classList.add('modal_oculto');
+
+    // === GUARDAR NUEVO USUARIO ===
+    botonGuardar.onclick = () => {
+      const nombreValor = inputNombre.value.trim();
+      const patron = /^[A-Za-zÁÉÍÓÚÑáéíóúñ ]{3,}$/; // solo letras y mínimo 3 caracteres
+
+      if (!patron.test(nombreValor)) {
+        inputNombre.style.border = '2px solid red';
+        alert('❌ El nombre debe tener al menos 3 letras y solo caracteres válidos.');
+        return;
+      }
+
+      const nuevoUsuario = { nombre: nombreValor, activo: true };
+      listaUsuarios.push(nuevoUsuario);
+      localStorage.setItem('usuarios', JSON.stringify(listaUsuarios));
+      mostrarUsuarios(listaUsuarios);
+
+      inputNombre.value = '';
+      inputNombre.style.border = '1px solid #ccc';
+      modalContenedor.classList.add('modal_oculto');
+    };
+
+    // === EDITAR USUARIO CON PROMPT ===
+    function editarUsuario(nombreActual) {
+      const nuevoNombre = prompt(`Nuevo nombre para ${nombreActual}:`, nombreActual);
+      if (nuevoNombre && nuevoNombre.trim() !== '') {
+        listaUsuarios = listaUsuarios.map(usuario =>
+          usuario.nombre === nombreActual ? { ...usuario, nombre: nuevoNombre.trim() } : usuario
+        );
+        localStorage.setItem('usuarios', JSON.stringify(listaUsuarios));
+        mostrarUsuarios(listaUsuarios);
+      }
+    }
+    window.editarUsuario = editarUsuario;
+
+    // === ELIMINAR USUARIO CON CONFIRM ===
+    function eliminarUsuario(nombreAEliminar) {
+      if (confirm(`¿Seguro que quieres eliminar a ${nombreAEliminar}?`)) {
+        listaUsuarios = listaUsuarios.filter(u => u.nombre !== nombreAEliminar);
+        localStorage.setItem('usuarios', JSON.stringify(listaUsuarios));
+        mostrarUsuarios(listaUsuarios);
+      }
+    }
+    window.eliminarUsuario = eliminarUsuario;
+
+    // === FILTRADO CON SWITCH ===
+    document.querySelectorAll('.nav-btn').forEach(boton => {
+      boton.addEventListener('click', e => {
+        const tipoFiltro = e.target.dataset.filtro;
+        switch (tipoFiltro) {
+          case 'todos':
+            mostrarUsuarios(listaUsuarios);
+            break;
+          case 'activos':
+            mostrarUsuarios(listaUsuarios.filter(u => u.activo));
+            break;
+          case 'inactivos':
+            mostrarUsuarios(listaUsuarios.filter(u => !u.activo));
+            break;
+          default:
+            mostrarUsuarios(listaUsuarios);
+        }
+      });
+    });
+
+    // === COOKIES Y LOCALSTORAGE ===
+    botonCookie.onclick = () => {
+      document.cookie = "usuario=Ricardo; max-age=3600; path=/";
+      alert("🍪 Cookie guardada por 1 hora.");
+    };
+
+    botonLimpiar.onclick = () => {
+      if (confirm("¿Borrar LocalStorage y Cookies?")) {
+        localStorage.removeItem('usuarios');
+        document.cookie.split(";").forEach(c => {
+          const nombreCookie = c.split("=")[0].trim();
+          document.cookie = nombreCookie + "=;expires=" + new Date(0).toUTCString() + ";path=/";
+        });
+        alert("✅ Todo borrado correctamente.");
+        location.reload();
+      }
+    };
+
+    // === ABRIR DETALLE EN NUEVA VENTANA ===
+    function abrirVentana(nombre, activo) {
+      window.open(
+        `detalle.html?nombre=${encodeURIComponent(nombre)}&activo=${activo}`,
+        "DetalleUsuario",
+        "width=400,height=300,resizable=no"
+      );
+    }
+    window.abrirVentana = abrirVentana;
+  </script>
+</body>
+</html>
