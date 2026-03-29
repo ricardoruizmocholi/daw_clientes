@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Examen Final Práctico - Mega Ejercicio</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; padding-bottom: 50px; }
+        section { border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
+        #mouseArea { width: 100%; height: 150px; background-color: #e0f7fa; border: 2px dashed #0097a7; text-align: center; line-height: 150px; margin-top: 10px; cursor: crosshair;}
+        #mouseLog { height: 100px; overflow-y: auto; background: #333; color: lime; padding: 10px; font-family: monospace; }
+        iframe { border: 2px solid red; transition: all 0.2s; }
+        .disabled { opacity: 0.5; pointer-events: none; }
+    </style>
+</head>
+<body>
+
+    <h1>Super Panel de Control ASIR</h1>
+
+    <section id="sec-password">
+        <h2>1. Panel de Contraseña (Teclado)</h2>
+        <p>Pulsa <strong>Shift + Enter</strong> para empezar/parar de grabar. Escribe "Yggdrasil". Resetea con <strong>Ctrl + Z</strong>.</p>
+        <div id="msgPassword" style="font-weight: bold; color: blue;">Esperando secuencia...</div>
+    </section>
+
+    <section id="sec-formulario">
+        <h2>2. Formulario Inteligente</h2>
+        <form id="miFormulario">
+            <input type="text" placeholder="Campo 1" class="input-form" required>
+            <input type="text" placeholder="Campo 2" class="input-form" required>
+            <input type="text" placeholder="Campo 3" class="input-form" required>
+            <br><br>
+            <button type="submit" id="btnEnviar" disabled>Enviar (Bloqueado)</button>
+            <button type="reset" id="btnReset">Resetear Formulario</button>
+        </form>
+        <p id="estadoCampos">Campos visitados/cambiados: 0/3</p>
+    </section>
+
+    <section id="sec-ventanas">
+        <h2>3. Ventanas e Iframe</h2>
+        <button id="btnPopup">Abrir Popup</button>
+        <p>Aperturas históricas del popup: <span id="contadorAperturas">0</span></p>
+        <br>
+        <iframe id="miIframe" src="https://example.com" width="400" height="200"></iframe>
+    </section>
+
+    <section id="sec-portapapeles">
+        <h2>4. Portapapeles Mágico</h2>
+        <p>Palabra prohibida: <strong>"Voldemort"</strong></p>
+        <input type="text" id="inputMagico" placeholder="Copia/Pega aquí..." size="40">
+        <button id="btnCopiarExtra">Copiar texto secreto al portapapeles</button>
+    </section>
+
+    <section id="sec-raton">
+        <h2>5. Eventos de Ratón</h2>
+        <button id="btnToggleRaton">Activar Todos los Eventos</button>
+        <button onclick="gestionarEventoEspecifico('click', true)">+ Add Click</button>
+        <button onclick="gestionarEventoEspecifico('click', false)">- Del Click</button>
+        
+        <div id="mouseArea">Área de pruebas de ratón (Pasa por aquí o haz click)</div>
+        
+        <h4>Log de Eventos (y contadores)</h4>
+        <div id="contadoresRaton">Clicks: 0 | Mouvemove: 0 | Mousedown: 0 | Mouseup: 0</div>
+        <div id="mouseLog"></div>
+    </section>
+
+    <script>
+        // ==========================================
+        // 1. PANEL DE CONTRASEÑA
+        // ==========================================
+        let grabandoPassword = false;
+        let colaTeclas = [];
+        const MSG_PASS = document.getElementById('msgPassword');
+
+        document.addEventListener('keydown', (e) => {
+            // Activar/Desactivar con Shift + Enter
+            if (e.shiftKey && e.key === 'Enter') {
+                grabandoPassword = !grabandoPassword;
+                if (grabandoPassword) {
+                    colaTeclas = []; // Vaciamos al empezar
+                    MSG_PASS.textContent = "🔴 GRABANDO... Escribe la contraseña.";
+                    MSG_PASS.style.color = "red";
+                } else {
+                    // Comprobar contraseña al parar
+                    const passIntroducida = colaTeclas.join('');
+                    if (passIntroducida === "Yggdrasil") {
+                        MSG_PASS.textContent = "✅ ¡CONTRASEÑA CORRECTA! Acceso concedido.";
+                        MSG_PASS.style.color = "green";
+                    } else {
+                        MSG_PASS.textContent = `❌ ERROR. Has escrito: ${passIntroducida}`;
+                        MSG_PASS.style.color = "darkred";
+                    }
+                }
+                return; // Evitamos que el Enter se guarde
+            }
+
+            // Resetear con Ctrl + Z
+            if (e.ctrlKey && e.key === 'z') {
+                colaTeclas = [];
+                MSG_PASS.textContent = "Cola reseteada.";
+                return;
+            }
+
+            // Si está grabando, guardamos teclas (ignoramos modificadores)
+            if (grabandoPassword && e.key.length === 1) { // length === 1 evita guardar "Shift", "CapsLock", etc.
+                colaTeclas.push(e.key);
+                if (colaTeclas.length > 9) colaTeclas.shift(); // Mantiene solo las últimas 9
+                console.log("Cola actual:", colaTeclas);
+            }
+        });
+
+        // ==========================================
+        // 2. FORMULARIO INTELIGENTE
+        // ==========================================
+        const inputs = document.querySelectorAll('.input-form');
+        const btnEnviar = document.getElementById('btnEnviar');
+        const form = document.getElementById('miFormulario');
+        const estadoCampos = document.getElementById('estadoCampos');
+        
+        let visitados = new Set();
+        let cambiados = new Set();
+
+        function checkFormulario() {
+            estadoCampos.textContent = `Campos visitados/cambiados: ${visitados.size}/${inputs.length} | ${cambiados.size}/${inputs.length}`;
+            // Se habilita si todos han sido visitados y cambiados
+            if (visitados.size === inputs.length && cambiados.size === inputs.length) {
+                btnEnviar.disabled = false;
+                btnEnviar.textContent = "Enviar (Desbloqueado)";
+            } else {
+                btnEnviar.disabled = true;
+                btnEnviar.textContent = "Enviar (Bloqueado)";
+            }
+        }
+
+        inputs.forEach((input, index) => {
+            input.addEventListener('focus', () => { visitados.add(index); checkFormulario(); });
+            input.addEventListener('input', () => { cambiados.add(index); checkFormulario(); });
+        });
+
+        form.addEventListener('reset', () => {
+            alert("⚠️ El formulario se ha reseteado.");
+            visitados.clear();
+            cambiados.clear();
+            checkFormulario();
+        });
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert("Formulario enviado con éxito!");
+        });
+
+        // ==========================================
+        // 3. VENTANAS, COOKIES E IFRAME
+        // ==========================================
+        let aperturas = 0;
+        const spanAperturas = document.getElementById('contadorAperturas');
+
+        // Helpers Cookies
+        const setCookie = (name, val) => document.cookie = `${name}=${val}; path=/`;
+        const getCookie = (name) => {
+            const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+            return match ? match[2] : 0;
+        };
+
+        // Al cargar la página, recuperar cookie
+        window.addEventListener('load', () => {
+            aperturas = parseInt(getCookie('popupCount')) || 0;
+            spanAperturas.textContent = aperturas;
+        });
+
+        // Al salir de la página, guardar cookie
+        window.addEventListener('beforeunload', () => {
+            setCookie('popupCount', aperturas);
+        });
+
+        // Abrir Popup y comunicación
+        document.getElementById('btnPopup').addEventListener('click', () => {
+            aperturas++;
+            spanAperturas.textContent = aperturas;
+            
+            // Abrimos una ventana en blanco y le inyectamos código para que nos hable
+            const popup = window.open("", "MiPopup", "width=300,height=200");
+            popup.document.write(`
+                <h2>Soy el Popup</h2>
+                <button onclick="window.close()">Cerrar</button>
+                <script>
+                    window.onload = () => window.opener.mensajeHijo("¡El popup se ha cargado completamente!");
+                    window.onunload = () => window.opener.mensajeHijo("¡El popup se ha cerrado!");
+                <\/script>
+            `);
+        });
+
+        // Función que el popup llama
+        function mensajeHijo(msg) { console.log(msg); alert(msg); }
+
+        // Resize Iframe
+        window.addEventListener('resize', () => {
+            const iframe = document.getElementById('miIframe');
+            iframe.width = window.innerWidth * 0.5; // El 50% de la ventana
+            iframe.height = window.innerHeight * 0.3;
+        });
+
+        // ==========================================
+        // 4. PORTAPAPELES MÁGICO
+        // ==========================================
+        const inputMagico = document.getElementById('inputMagico');
+        
+        inputMagico.addEventListener('copy', (e) => modificarPortapapeles(e));
+        inputMagico.addEventListener('cut', (e) => modificarPortapapeles(e));
+
+        function modificarPortapapeles(e) {
+            e.preventDefault(); // Evitamos que copie lo normal
+            e.clipboardData.setData("text/plain", "Contenido personalizado interceptado");
+            alert("Se ha guardado un texto diferente al que seleccionaste.");
+        }
+
+        document.getElementById('btnCopiarExtra').addEventListener('click', () => {
+            navigator.clipboard.writeText("Este es el texto copiado por el botón.");
+            alert("Texto copiado al portapapeles con la API Navigator");
+        });
+
+        inputMagico.addEventListener('paste', (e) => {
+            let textoPegado = (e.clipboardData || window.clipboardData).getData('text');
+            if (textoPegado.toLowerCase().includes("voldemort")) {
+                e.preventDefault();
+                // Remplazamos la selección actual del input por asteriscos
+                const asteriscos = textoPegado.replace(/voldemort/gi, "*****");
+                inputMagico.value += asteriscos; 
+                alert("¡Palabra prohibida detectada y censurada!");
+            }
+        });
+
+        // ==========================================
+        // 5. EVENTOS DE RATÓN Y LOGS
+        // ==========================================
+        const areaRaton = document.getElementById('mouseArea');
+        const log = document.getElementById('mouseLog');
+        const contadoresUI = document.getElementById('contadoresRaton');
+        const btnToggle = document.getElementById('btnToggleRaton');
+
+        let eventosActivos = false;
+        let contadoresRaton = { click: 0, mousemove: 0, mousedown: 0, mouseup: 0 };
+        const tiposEventos = ['click', 'mousemove', 'mousedown', 'mouseup'];
+
+        // Handler genérico para los eventos
+        function manejadorRaton(e) {
+            // Actualizar contadores
+            contadoresRaton[e.type]++;
+            contadoresUI.textContent = `Clicks: ${contadoresRaton.click} | Mousemove: ${contadoresRaton.mousemove} | Mousedown: ${contadoresRaton.mousedown} | Mouseup: ${contadoresRaton.mouseup}`;
+            
+            // Añadir al log
+            const p = document.createElement('div');
+            p.textContent = `[${new Date().toLocaleTimeString()}] Detectado: ${e.type} en X:${e.clientX} Y:${e.clientY}`;
+            log.prepend(p); // Añade arriba
+        }
+
+        // Toggle General (botón principal)
+        btnToggle.addEventListener('click', () => {
+            if (eventosActivos) {
+                // Desactivar
+                tiposEventos.forEach(tipo => areaRaton.removeEventListener(tipo, manejadorRaton));
+                btnToggle.textContent = "Activar Todos los Eventos";
+                btnToggle.style.backgroundColor = "";
+            } else {
+                // Activar
+                tiposEventos.forEach(tipo => areaRaton.addEventListener(tipo, manejadorRaton));
+                btnToggle.textContent = "Desactivar Todos los Eventos";
+                btnToggle.style.backgroundColor = "lightcoral";
+            }
+            eventosActivos = !eventosActivos;
+        });
+
+        // Toggle Específico (botones extra)
+        function gestionarEventoEspecifico(tipo, añadir) {
+            if (añadir) {
+                areaRaton.addEventListener(tipo, manejadorRaton);
+                alert(`Evento '${tipo}' AÑADIDO individualmente.`);
+            } else {
+                areaRaton.removeEventListener(tipo, manejadorRaton);
+                alert(`Evento '${tipo}' ELIMINADO individualmente.`);
+            }
+        }
+    </script>
+</body>
+</html>
