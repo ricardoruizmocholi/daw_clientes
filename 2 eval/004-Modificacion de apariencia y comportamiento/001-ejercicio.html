@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Registro Profesional de Desarrollador</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial; padding: 30px; background-color: #f0f2f5; }
+        h2 { color: #1a73e8; border-bottom: 2px solid #1a73e8; padding-bottom: 10px; }
+        form { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        
+        label { display: block; margin-top: 15px; font-weight: bold; }
+        input, select { width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        input[type="checkbox"] { width: auto; }
+
+        /* Estados de validación */
+        .error { border: 2px solid #d93025; background-color: #fce8e6; }
+        .correcto { border: 2px solid #1e8e3e; }
+        .mensaje-error { color: #d93025; font-size: 12px; margin-top: 5px; display: none; }
+        
+        .oculto { display: none; }
+        .btn-container { margin-top: 20px; }
+        button { padding: 10px 20px; cursor: pointer; background: #1a73e8; color: white; border: none; border-radius: 4px; }
+        button[type="reset"] { background: #5f6368; }
+    </style>
+</head>
+<body>
+
+    <h2>1. Información Personal</h2>
+    <form id="formPersonal" name="formPersonal">
+        <label>Nombre (*):
+            <input type="text" id="nombre" maxlength="50">
+            <div id="err_nombre" class="mensaje-error">Nombre obligatorio (mín. 2 letras)</div>
+        </label>
+
+        <label>Apellido (*):
+            <input type="text" id="apellido" maxlength="50">
+            <div id="err_apellido" class="mensaje-error">Apellido obligatorio (mín. 2 letras)</div>
+        </label>
+
+        <label>Email (Opcional):
+            <input type="email" id="email" maxlength="100">
+            <div id="err_email" class="mensaje-error">Debe contener un @ válido</div>
+        </label>
+
+        <label>Ciudad:
+            <input type="text" id="ciudad" maxlength="50">
+            <div id="err_ciudad" class="mensaje-error">Mínimo 2 caracteres</div>
+        </label>
+
+        <label>País:
+            <input type="text" id="pais" maxlength="50">
+            <div id="err_pais" class="mensaje-error">Mínimo 2 caracteres</div>
+        </label>
+
+        <label>Fecha Nacimiento:
+            <input type="date" id="fecha_nac">
+            <div id="err_fecha_nac" class="mensaje-error">No puede ser una fecha futura</div>
+        </label>
+    </form>
+
+    <h2>2. Datos Laborales</h2>
+    <form id="formLaboral" name="formLaboral">
+        <label>
+            <input type="checkbox" id="activo"> ¿Está en activo?
+        </label>
+
+        <label>Fecha de Alta:
+            <input type="date" id="fecha_alta">
+            <div id="err_fecha_alta" class="mensaje-error">Fecha obligatoria o no puede ser futura</div>
+        </label>
+
+        <div id="capaEstudio" class="oculto">
+            <label>Nivel de Estudios (*):
+                <select id="id_estudio">
+                    <option value="NULL">Sin estudio</option>
+                    <option value="ESO">ESO</option>
+                    <option value="Bachillerato">Bachillerato</option>
+                    <option value="Grado">Grado Universitario</option>
+                    <option value="Master">Máster / Doctorado</option>
+                </select>
+                <div id="err_estudio" class="mensaje-error">Si está activo, debe seleccionar un estudio</div>
+            </label>
+        </div>
+
+        <div class="btn-container">
+            <button type="button" id="btnEnviar">Validar y Enviar</button>
+            <button type="reset" id="btnReset">Resetear Formulario</button>
+        </div>
+    </form>
+
+    <script>
+        window.onload = function() {
+            // Elementos Globales
+            const nombre = document.getElementById("nombre");
+            const apellido = document.getElementById("apellido");
+            const email = document.getElementById("email");
+            const ciudad = document.getElementById("ciudad");
+            const pais = document.getElementById("pais");
+            const fechaNac = document.getElementById("fecha_nac");
+            const activo = document.getElementById("activo");
+            const fechaAlta = document.getElementById("fecha_alta");
+            const idEstudio = document.getElementById("id_estudio");
+            const capaEstudio = document.getElementById("capaEstudio");
+
+            // Foco inicial
+            nombre.focus();
+
+            // --- 1. LIMPIEZA DE CARACTERES (Solo letras) ---
+            const limpiarLetras = function() {
+                this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ ]/g, "");
+            };
+            nombre.addEventListener("input", limpiarLetras);
+            apellido.addEventListener("input", limpiarLetras);
+
+            // --- 2. CONTROL VISIBILIDAD "ACTIVO" ---
+            activo.addEventListener("change", function() {
+                if (this.checked) {
+                    capaEstudio.classList.remove("oculto");
+                } else {
+                    capaEstudio.classList.add("oculto");
+                    idEstudio.value = "NULL"; // Simulado
+                }
+            });
+
+            // --- 3. FUNCIÓN DE VALIDACIÓN ---
+            document.getElementById("btnEnviar").addEventListener("click", function() {
+                let primerError = null;
+                const hoy = new Date().toISOString().split('T')[0]; // Fecha actual YYYY-MM-DD
+
+                // Función auxiliar para gestionar el CSS del error
+                const validarCampo = (elemento, condicion, idError) => {
+                    const msg = document.getElementById(idError);
+                    if (condicion) {
+                        elemento.classList.remove("error");
+                        elemento.classList.add("correcto");
+                        msg.style.display = "none";
+                        return true;
+                    } else {
+                        elemento.classList.remove("correcto");
+                        elemento.classList.add("error");
+                        msg.style.display = "block";
+                        if (!primerError) primerError = elemento;
+                        return false;
+                    }
+                };
+
+                // Lógica de validaciones solicitadas
+                validarCampo(nombre, nombre.value.trim().length >= 2, "err_nombre");
+                validarCampo(apellido, apellido.value.trim().length >= 2, "err_apellido");
+                
+                // Email: si está relleno, debe tener @
+                if (email.value.length > 0) {
+                    validarCampo(email, email.value.includes("@"), "err_email");
+                }
+
+                // Ciudad y País: si están rellenos, mín 2
+                if (ciudad.value.length > 0) validarCampo(ciudad, ciudad.value.length >= 2, "err_ciudad");
+                if (pais.value.length > 0) validarCampo(pais, pais.value.length >= 2, "err_pais");
+
+                // Fecha Nacimiento: no futura
+                if (fechaNac.value !== "") {
+                    validarCampo(fechaNac, fechaNac.value <= hoy, "err_fecha_nac");
+                }
+
+                // Lógica Laboral según Checkbox
+                if (activo.checked) {
+                    validarCampo(fechaAlta, fechaAlta.value !== "" && fechaAlta.value <= hoy, "err_fecha_alta");
+                    validarCampo(idEstudio, idEstudio.value !== "NULL", "err_estudio");
+                } else {
+                    // Si no está activo, fecha_alta no puede ser futura pero puede estar vacía
+                    if (fechaAlta.value !== "") {
+                        validarCampo(fechaAlta, fechaAlta.value <= hoy, "err_fecha_alta");
+                    }
+                    // Resetear estados de error del campo ahora oculto
+                    document.getElementById("err_estudio").style.display = "none";
+                }
+
+                // Gestión del FOCO al primer error
+                if (primerError) {
+                    primerError.focus();
+                } else {
+                    alert("¡Formulario validado correctamente!");
+                }
+            });
+
+            // --- 4. RESET Y FOCO ---
+            document.getElementById("btnReset").addEventListener("click", function() {
+                document.forms["formPersonal"].reset();
+                document.forms["formLaboral"].reset();
+                
+                // Limpiar clases CSS y errores
+                const inputs = document.querySelectorAll("input, select");
+                inputs.forEach(i => i.classList.remove("error", "correcto"));
+                const msgs = document.querySelectorAll(".mensaje-error");
+                msgs.forEach(m => m.style.display = "none");
+                
+                capaEstudio.classList.add("oculto");
+                nombre.focus();
+            });
+        };
+    </script>
+</body>
+</html>

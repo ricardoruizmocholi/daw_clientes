@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Examen: Registro de Banda Progresivo</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; line-height: 1.6; padding: 20px; color: #333; }
+        h1 { border-bottom: 2px solid #2c3e50; padding-bottom: 10px; }
+        section { 
+            border: 1px solid #ddd; padding: 20px; margin-bottom: 20px; 
+            border-radius: 8px; transition: all 0.3s; 
+        }
+        /* Estilo para secciones bloqueadas */
+        .bloqueado { opacity: 0.4; pointer-events: none; background-color: #f9f9f9; }
+        .activo { border-left: 10px solid #27ae60; background-color: #fff; }
+        
+        .inst-box { margin-top: 15px; padding: 10px; background: #e8f4fd; border-radius: 4px; }
+        .oculto { display: none; }
+        
+        #debug-info { 
+            background: #2c3e50; color: #ecf0f1; padding: 20px; 
+            border-radius: 8px; font-family: 'Courier New', monospace; font-size: 0.9em;
+        }
+        .tag { font-weight: bold; color: #e74c3c; }
+    </style>
+</head>
+<body>
+
+    <h1>Banda: <span id="nombreBanda">____</span></h1>
+
+    <section id="sec-0" class="activo">
+        <h3>🎸 Miembro 1 <small>(Acceso: document.forms[0].elements[n])</small></h3>
+        <form name="formIndex" id="form0">
+            <label>Nombre: <input type="text"></label>
+            <label>Apellido: <input type="text"></label>
+            <label>Edad: <input type="number"></label>
+            <label>Posición: 
+                <select>
+                    <option value="vocalista">Vocalista</option>
+                    <option value="musico">Músico</option>
+                </select>
+            </label>
+            <div class="inst-box oculto">
+                Instrumento: <select><option>Guitarra</option><option>Batería</option><option>Bajo</option></select>
+            </div>
+        </form>
+    </section>
+
+    <section id="sec-1" class="bloqueado">
+        <h3>🥁 Miembro 2 <small>(Acceso: document.formulario.input)</small></h3>
+        <form name="formName" id="form1">
+            <label>Nombre: <input type="text" name="m2_nom"></label>
+            <label>Apellido: <input type="text" name="m2_ape"></label>
+            <label>Edad: <input type="number" name="m2_edad"></label>
+            <label>Posición: 
+                <select name="m2_pos">
+                    <option value="vocalista">Vocalista</option>
+                    <option value="musico">Músico</option>
+                </select>
+            </label>
+            <div class="inst-box oculto">
+                Instrumento: <select name="m2_inst"><option>Guitarra</option><option>Batería</option><option>Bajo</option></select>
+            </div>
+        </form>
+    </section>
+
+    <section id="sec-2" class="bloqueado">
+        <h3>🎹 Miembro 3 <small>(Acceso: getElementById)</small></h3>
+        <form name="formId" id="form2">
+            <label>Nombre: <input type="text" id="m3_nom"></label>
+            <label>Apellido: <input type="text" id="m3_ape"></label>
+            <label>Edad: <input type="number" id="m3_edad"></label>
+            <label>Posición: 
+                <select id="m3_pos">
+                    <option value="vocalista">Vocalista</option>
+                    <option value="musico">Músico</option>
+                </select>
+            </label>
+            <div class="inst-box oculto">
+                Instrumento: <select id="m3_inst"><option>Guitarra</option><option>Batería</option><option>Bajo</option></select>
+            </div>
+        </form>
+    </section>
+
+    <section id="sec-3" class="bloqueado">
+        <h3>🎤 Miembro 4 <small>(Acceso: querySelector)</small></h3>
+        <form name="formQuery" id="form3">
+            <label>Nombre: <input type="text" class="q-nom"></label>
+            <label>Apellido: <input type="text" class="q-ape"></label>
+            <label>Edad: <input type="number" class="q-edad"></label>
+            <label>Posición: 
+                <select class="q-pos">
+                    <option value="vocalista">Vocalista</option>
+                    <option value="musico">Músico</option>
+                </select>
+            </label>
+            <div class="inst-box oculto">
+                Instrumento: <select class="q-inst"><option>Guitarra</option><option>Batería</option><option>Bajo</option></select>
+            </div>
+        </form>
+    </section>
+
+    <div id="debug-info">
+        <h4>🔍 ESTRUCTURA DE LOS FORMULARIOS:</h4>
+        <div id="lista-detalles"></div>
+    </div>
+
+    <script>
+        // Esperamos a que el DOM esté listo
+        window.addEventListener('DOMContentLoaded', () => {
+            
+            const listaApellidos = ["", "", "", ""];
+            
+            // --- FUNCIÓN DE UTILIDAD: Obtener elementos de un form según el método ---
+            function obtenerElementos(index) {
+                const f = document.forms[index];
+                
+                if (index === 0) { // MÉTODO 1: ÍNDICES
+                    return {
+                        nom: f.elements[0], 
+                        ape: f.elements[1], 
+                        edad: f.elements[2], 
+                        pos: f.elements[3], 
+                        box: f.querySelector('.inst-box')
+                    };
+                }
+                if (index === 1) { // MÉTODO 2: NAME
+                    return {
+                        nom: document.formName.m2_nom,
+                        ape: document.formName.m2_ape,
+                        edad: document.formName.m2_edad,
+                        pos: document.formName.m2_pos,
+                        box: f.querySelector('.inst-box')
+                    };
+                }
+                if (index === 2) { // MÉTODO 3: ID
+                    return {
+                        nom: document.getElementById('m3_nom'),
+                        ape: document.getElementById('m3_ape'),
+                        edad: document.getElementById('m3_edad'),
+                        pos: document.getElementById('m3_pos'),
+                        box: f.querySelector('.inst-box')
+                    };
+                }
+                if (index === 3) { // MÉTODO 4: QUERYSELECTOR
+                    return {
+                        nom: document.querySelector('.q-nom'),
+                        ape: document.querySelector('.q-ape'),
+                        edad: document.querySelector('.q-edad'),
+                        pos: document.querySelector('.q-pos'),
+                        box: f.querySelector('.inst-box')
+                    };
+                }
+            }
+
+            // --- LÓGICA PRINCIPAL PARA LOS 4 FORMULARIOS ---
+            for (let i = 0; i < 4; i++) {
+                const elementos = obtenerElementos(i);
+                const formulario = document.forms[i];
+
+                // 1. Mostrar/Ocultar instrumento al cambiar posición
+                elementos.pos.addEventListener('change', function() {
+                    if (this.value === 'musico') {
+                        elementos.box.classList.remove('oculto');
+                    } else {
+                        elementos.box.classList.add('oculto');
+                    }
+                });
+
+                // 2. Validar si el formulario está completo para desbloquear el siguiente
+                formulario.addEventListener('input', () => {
+                    const nombreOk = elementos.nom.value.trim() !== "";
+                    const apellidoOk = elementos.ape.value.trim() !== "";
+                    const edadOk = elementos.edad.value !== "";
+
+                    if (nombreOk && apellidoOk && edadOk) {
+                        // Guardamos las 2 letras del apellido para el título
+                        listaApellidos[i] = elementos.ape.value.substring(0, 2);
+                        actualizarTituloBanda();
+
+                        // Desbloqueamos la siguiente sección (si existe)
+                        const siguiente = document.getElementById(`sec-${i+1}`);
+                        if (siguiente) {
+                            siguiente.classList.remove('bloqueado');
+                            siguiente.classList.add('activo');
+                        }
+                    }
+                });
+            }
+
+            // --- FUNCIÓN: Crear el nombre de la banda ---
+            function actualizarTituloBanda() {
+                // Filtramos posiciones vacías y unimos
+                const nombreFinal = listaApellidos.filter(a => a !== "").join("");
+                document.getElementById('nombreBanda').innerText = nombreFinal.toUpperCase();
+            }
+
+            // --- FUNCIÓN: Mostrar la estructura de los forms (Lo que pide el enunciado) ---
+            function volcarEstructura() {
+                const log = document.getElementById('lista-detalles');
+                let contenido = "";
+
+                // Recorremos la colección de formularios del documento
+                Array.from(document.forms).forEach(f => {
+                    contenido += `<p><span class="tag">FORMULARIO:</span> ${f.name} | <span class="tag">ELEMENTOS:</span> ${f.elements.length}</p><ul>`;
+                    
+                    // Recorremos los elementos de cada formulario
+                    Array.from(f.elements).forEach(el => {
+                        contenido += `<li>Elemento: <strong>${el.name || el.id || 'N/A'}</strong> | Tipo: <i>${el.type}</i></li>`;
+                    });
+                    
+                    contenido += `</ul><hr style="border:0; border-top:1px solid #444">`;
+                });
+                log.innerHTML = contenido;
+            }
+
+            // Ejecutamos el volcado al cargar
+            volcarEstructura();
+        });
+    </script>
+</body>
+</html>

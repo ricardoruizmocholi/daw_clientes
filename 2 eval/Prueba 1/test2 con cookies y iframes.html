@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Examen Final: Intranet de Seguridad (SIN RESOLVER)</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e9ecef; margin: 0; padding: 20px; }
+    .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+    h1 { color: #343a40; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+    
+    /* Banner de Cookies */
+    #cookieBanner { background: #343a40; color: white; padding: 15px; text-align: center; position: fixed; bottom: 0; left: 0; width: 100%; z-index: 1000; }
+    #cookieBanner button { background: #28a745; color: white; border: none; padding: 8px 15px; cursor: pointer; border-radius: 5px; margin-left: 10px; }
+    
+    label { display: block; margin-top: 15px; font-weight: bold; color: #495057; }
+    input, select { width: 100%; padding: 10px; margin-top: 5px; box-sizing: border-box; border: 1px solid #ced4da; border-radius: 4px; transition: border-color 0.3s; }
+    
+    /* Estados */
+    .error { border: 2px solid #dc3545 !important; background-color: #f8d7da !important; }
+    .correcto { border: 2px solid #28a745 !important; }
+    .focused { border: 2px solid #007bff; outline: none; box-shadow: 0 0 8px rgba(0,123,255,0.2); }
+    .msg-error { color: #dc3545; font-size: 13px; margin-top: 5px; font-weight: bold; }
+    .oculto { display: none; }
+    
+    .btn-action { background: #007bff; color: white; border: none; padding: 12px 20px; cursor: pointer; border-radius: 5px; margin-top: 20px; font-size: 16px; }
+    .btn-secondary { background: #6c757d; color: white; border: none; padding: 8px 15px; cursor: pointer; border-radius: 5px; margin-top: 10px; }
+    
+    /* Iframe */
+    #previewFrame { width: 100%; height: 200px; border: 2px dashed #ccc; margin-top: 15px; border-radius: 5px; }
+  </style>
+</head>
+<body>
+
+  <div id="cookieBanner" class="oculto">
+    Este portal de seguridad utiliza cookies para mantener tu sesión. 
+    <button id="btnAceptarCookies">Aceptar y Continuar</button>
+  </div>
+
+  <div class="container">
+    <h1>Configuración de Agente</h1>
+
+    <form id="formAgente">
+      <button type="button" id="btnTerminos" class="btn-secondary">Leer Protocolo de Seguridad (Abrir Popup)</button>
+
+      <label for="codigoAgente">Código de Agente (Formato: AGT-1234-XYZ):</label>
+      <input type="text" id="codigoAgente" placeholder="Ej. AGT-9999-ABC">
+
+      <label for="email">Correo Encriptado (Debe ser @agencia.gov):</label>
+      <input type="email" id="email" placeholder="agente@agencia.gov">
+
+      <label for="pin">PIN de Acceso (Exactamente 6 dígitos):</label>
+      <input type="password" id="pin" maxlength="6" placeholder="******">
+
+      <label for="departamento">Asignación de Departamento:</label>
+      <select id="departamento">
+        <option value="">-- Selecciona un departamento --</option>
+        <option value="inteligencia">Inteligencia Artificial</option>
+        <option value="ciberseguridad">Ciberseguridad</option>
+        <option value="operaciones">Operaciones Tácticas</option>
+      </select>
+
+      <label>Previsualización del Servidor del Departamento:</label>
+      <iframe id="previewFrame" src="about:blank" title="Previsualización"></iframe>
+
+      <button type="submit" class="btn-action">Validar y Registrar Perfil</button>
+    </form>
+  </div>
+
+  <script>
+    /* ==================================================
+       TODO 1: GESTIÓN DE COOKIES (Set y Get)
+    ================================================== */
+    // Crea una función setCookie(nombre, valor, dias) que guarde una cookie
+    function setCookie(nombre, valor, dias) {
+      const fecha = new Date();
+      fecha.setTime(fecha.getTime() + (dias * 24 * 60 * 60 * 1000));
+      document.cookie = `${nombre}=${valor};expires=${fecha.toUTCString()};path=/`;
+    }
+
+    // Crea una función getCookie(nombre) que devuelva el valor de la cookie, o "" si no existe
+    function getCookie(nombre) {
+        const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        let c = cookies[i].trim();
+        if (c.indexOf(nombre + "=") === 0) {
+          return c.substring(nombre.length + 1, c.length);
+        }
+      }
+      return "";
+      
+    }
+
+    /* ==================================================
+       TODO 2: LÓGICA DE INICIO Y BANNER DE COOKIES
+    ================================================== */
+    // Al cargar la página (window.onload):
+    // 1. Comprueba si la cookie "protocolo_aceptado" NO existe o no es "SI".
+    // 2. Si no existe o no es "SI", quítale la clase "oculto" al div "cookieBanner".
+    // 3. Envía el foco al campo "codigoAgente".
+
+    window.onload = function () {
+        const banner = document.getElementById("cookieBanner");
+
+        // comprobamos si la cookie "protocolo_aceptado" No existe
+        if(getCookie("protocolo_aceptado")!=="SI"){
+            banner.classList.remove("oculto");
+        }
+
+        //Foco inicial al primer campo
+
+        document.getElementById("codigoAgente").focus();
+
+    };
+    
+    // Añade un evento click al botón "btnAceptarCookies":
+    // 1. Crea la cookie "protocolo_aceptado" con el valor "SI" (por 1 día).
+    // 2. Oculta el banner (añadiendo la clase "oculto").
+    document.getElementById("btnAceptarCookies").addEventListener("click", function(){
+        setCookie("protocolo_aceptado","SI",1);//Guardamo durante 1 dia
+        document.getElementById("cookieBanner").classList.add("oculto");//ocultamos el baner con la clases
+    })
+
+    /* ==================================================
+       TODO 3: GESTIÓN DE POPUPS (window.open)
+    ================================================== */
+    // Al hacer click en el botón "btnTerminos":
+    // 1. Abre un popup vacío (URL "") llamado "ProtocoloPopup" con medidas 500x400.
+    // 2. Escribe en el documento del popup un HTML con un título <h2> y un botón para cerrar el popup (window.close()).
+    
+    let ventanaProtocolo;
+
+    document.getElementById("btnTermininos").addEventListener("click", function(){
+    
+        // Abrimos un popup con dimensiones específicas
+      // Si usas un archivo local real, pondrías 'terminos.html' en vez de ''
+      ventanaProtocolo = window.open("", "ProtocoloPopup", "width=500,height=400,top=100,left=100");
+
+      ventanaProtocolo.document.write(`
+        <body style="font-family:sans-serif; padding:20px; background:#343a40; color:white;">
+          <h2>Protocolo de Máxima Seguridad</h2>
+          <p>Al registrarte, cedes todos tus datos a la Agencia.</p>
+          <button onclick="window.close()" style="padding:10px; background:#dc3545; color:white; border:none; cursor:pointer;">Cerrar Protocolo</button>
+        </body>
+      `);
+    });
+
+    /* ==================================================
+       TODO 4: MANIPULACIÓN DE IFRAME DINÁMICO
+    ================================================== */
+    // Al cambiar (evento 'change') el select "departamento":
+    // 1. Si elige "inteligencia", cambia el src del iframe para mostrar un h2 (puedes inyectar HTML usando: "data:text/html;charset=utf-8,<h2>...</h2>").
+    // 2. Si elige "ciberseguridad", haz lo mismo pero con un texto en verde.
+    // 3. Si elige "operaciones", haz lo mismo pero con un texto en rojo.
+    // 4. Si no elige nada, pon el src a "about:blank".
+
+    const selectDept = document.getElementById("departamento");
+    const iframe = document.getElementById("previewFrame");
+
+    selectDept.addEventListener("change", function(){
+        const valor = this.value;
+        //Cambiamos el atributo 'src' del iframe basandome en la seleccion
+        if(valor === "inteligencia"){
+            iframe.src = "data:text/html;charset=utf-8,<h2>Servidor de Inteligencia Artificial conectado.</h2>";
+        }else if (valor === "ciberseguridad"){
+            iframe.src = "data:text/html;charset=utf-8,<h2 style='color:green;'>Firewall y Ciberseguridad Activos.</h2>";
+        } else if (valor === "operaciones") {
+            iframe.src = "data:text/html;charset=utf-8,<h2 style='color:red;'>Mapa de Operaciones Tácticas cargando...</h2>";
+        } else {
+            iframe.src = "about:blank";
+        }
+    })
+
+
+    /* ==================================================
+       TODO 5: FUNCIONES DE ERROR Y FOCO
+    ================================================== */
+    // Crea la función ponerError(elemento, mensaje)
+    // - Llama a limpiarError(elemento) para quitar errores previos
+    // - Añade la clase 'error' al elemento
+    // - Crea un <p> con clase "msg-error" y el mensaje, e insértalo justo después del elemento.
+    
+    function ponerError(elemento, mensaje) {
+      limpiarError(elemento);
+      elemento.classList.add("error");
+      const p = document.createElement("p");
+      p.className = "msg-error";
+      p.textContent = mensaje;
+      elemento.insertAdjacentElement("afterend", p);
+    }
+    // Crea la función limpiarError(elemento)
+    // - Quita las clases 'error' y 'correcto' al elemento
+    // - Busca si su hermano siguiente (nextElementSibling) tiene la clase "msg-error" y elimínalo.
+    
+    function limpiarError(elemento) {
+      elemento.classList.remove("error");
+      elemento.classList.remove("correcto");
+      const sig = elemento.nextElementSibling;
+      if (sig && sig.classList.contains("msg-error")) {
+        sig.remove();
+      }
+    }
+
+    // Efecto Focus: Haz que todos los 'input' y 'select' añadan la clase 'focused'
+    // al recibir el foco (evento 'focus') y la quiten al perderlo (evento 'blur').
+
+    document.querySelectorAll("input, select").forEach(el => {
+      el.addEventListener("focus", () => el.classList.add("focused"));
+      el.addEventListener("blur", () => el.classList.remove("focused"));
+    });
+
+    /* ==================================================
+       TODO 6: VALIDACIÓN FINAL AL HACER SUBMIT
+    ================================================== */
+    // Al hacer submit en el formulario "formAgente":
+    // 1. Evita que se recargue la página.
+    // 2. Limpia todos los errores previos de los inputs y el select.
+    // 3. Valida lo siguiente:
+    //    - Código de Agente: Debe ser exactamente AGT-4números-3letras (ej. AGT-1234-ABC). Usa Regex.
+    //    - Email: Debe terminar estrictamente en @agencia.gov. Usa Regex.
+    //    - PIN: Debe ser exactamente 6 números. Usa Regex.
+    //    - Departamento: No puede estar vacío.
+    // 4. Si hay errores:
+    //    - Manda el foco al primer campo que falló.
+    // 5. Si todo es correcto:
+    //    - Comprueba con la función getCookie() si el usuario aceptó el protocolo ("protocolo_aceptado" === "SI").
+    //    - Si NO lo ha aceptado, lanza un alert() advirtiendo de seguridad.
+    //    - Si SÍ lo ha aceptado, lanza un alert() de éxito.
+
+    document.getElementById("formAgente").addEventListener("submit", function(e) {
+      e.preventDefault();
+      
+      document.querySelectorAll("input, select").forEach(limpiarError);
+
+      let valido = true;
+      let primerError = null;
+
+      function check(elemento, condicion, mensaje) {
+        if (!condicion) {
+          ponerError(elemento, mensaje);
+          if (!primerError) primerError = elemento;
+          valido = false;
+        } else {
+          elemento.classList.add("correcto");
+        }
+      }
+
+      // 1. Validar Código de Agente (Regex Exacto: AGT-4números-3letras)
+      const codigo = document.getElementById("codigoAgente");
+      const regexCodigo = /^AGT-\d{4}-[A-Z]{3}$/;
+      check(codigo, regexCodigo.test(codigo.value.trim()), "Formato incorrecto. Ejemplo: AGT-1234-ABC");
+
+      // 2. Validar Email (Debe terminar estrictamente en @agencia.gov)
+      const email = document.getElementById("email");
+      const regexEmail = /^[a-zA-Z0-9._%+-]+@agencia\.gov$/;
+      check(email, regexEmail.test(email.value.trim()), "El correo debe pertenecer al dominio @agencia.gov");
+
+      // 3. Validar PIN (Exactamente 6 dígitos numéricos)
+      const pin = document.getElementById("pin");
+      const regexPin = /^\d{6}$/;
+      check(pin, regexPin.test(pin.value), "El PIN debe contener exactamente 6 números.");
+
+      // 4. Validar Departamento (No puede estar vacío)
+      const dept = document.getElementById("departamento");
+      check(dept, dept.value !== "", "Debes asignar un departamento al agente.");
+
+      // Resolución Final
+      if (!valido) {
+        primerError.focus();
+      } else {
+        // Leemos la cookie para ver si aceptó los términos antes de enviar
+        if (getCookie("protocolo_aceptado") !== "SI") {
+          alert("¡ALERTA DE SEGURIDAD! No has aceptado las cookies del protocolo.");
+        } else {
+          alert("PERFIL VERIFICADO. Datos listos para encriptar y enviar.");
+        }
+      }
+    });
+
+  </script>
+</body>
+</html>

@@ -270,3 +270,88 @@ window.addEventListener('beforeunload', (e) => {
     e.returnValue = ''; // Necesario en navegadores modernos como Chrome
 });
 ```
+
+📋 Manipulación de Formularios desde Código
+Esta sección explica cómo interactuar con formularios HTML de manera dinámica, cubriendo los diferentes métodos de acceso a elementos y la lógica de control de flujo (bloqueo/desbloqueo).
+
+1. Métodos de Acceso a Elementos
+En el desarrollo de aplicaciones web, existen cuatro formas principales de alcanzar un dato dentro de un formulario. En el ejercicio de la banda, hemos aplicado una distinta para cada miembro:
+
+Por Índice (forms y elements): Utiliza la posición física en el HTML. Es útil cuando no conocemos los nombres o IDs de los campos.
+
+Sintaxis: document.forms[0].elements[0]
+
+Por Atributo name: Es la forma más directa y legible cuando los elementos tienen nombres definidos.
+
+Sintaxis: document.nombreFormulario.nombreInput
+
+Por ID (getElementById): El método estándar para seleccionar un elemento único de forma inequívoca en todo el DOM.
+
+Sintaxis: document.getElementById("id_del_elemento")
+
+Por Selector CSS (querySelector): El más flexible, permite usar clases, IDs o atributos como si estuviéramos en un archivo CSS.
+
+Sintaxis: document.querySelector(".clase-input")
+
+2. Lógica de Control y Flujo
+🔓 Desbloqueo Progresivo
+Para asegurar que el usuario rellena la banda en orden, utilizamos una combinación de CSS y JS:
+
+CSS: Definimos una clase .bloqueado { pointer-events: none; opacity: 0.5; } que impide cualquier interacción.
+
+JS: Escuchamos el evento input en el formulario actual. Cuando los campos obligatorios (value !== "") están llenos, localizamos la siguiente sección y eliminamos la clase de bloqueo.
+
+🎭 Visibilidad Dinámica
+El campo "Instrumento" solo debe ser visible si la posición es "Músico".
+
+Se logra escuchando el evento change en el <select> de posición.
+
+Si this.value === 'musico', eliminamos la clase .oculto (que tiene un display: none) del contenedor del instrumento.
+
+3. Ejemplo de Código Implementado
+A continuación, se muestra cómo se integran estos conceptos en una función de control:
+
+```
+// Ejemplo de validación y desbloqueo progresivo
+function configurarMiembro(index) {
+    const form = document.forms[index];
+    const inputs = obtenerInputsSegunMetodo(index); // Acceso personalizado
+
+    // 1. Control de visibilidad del instrumento
+    inputs.posicion.addEventListener('change', function() {
+        const cajaInst = form.querySelector('.inst-box');
+        this.value === 'musico' ? cajaInst.classList.remove('oculto') 
+                                : cajaInst.classList.add('oculto');
+    });
+
+    // 2. Control de validación para pasar al siguiente formulario
+    form.addEventListener('input', () => {
+        // Verificamos que los campos tengan contenido
+        const estaCompleto = inputs.nombre.value && inputs.apellido.value;
+
+        if (estaCompleto) {
+            // Lógica para generar el nombre de la banda (2 letras del apellido)
+            apellidosBanda[index] = inputs.apellido.value.substring(0, 2);
+            actualizarTitulo();
+
+            // Desbloqueo del siguiente formulario
+            const siguienteSect = document.getElementById(`sec-${index + 1}`);
+            if (siguienteSect) siguienteSect.classList.remove('bloqueado');
+        }
+    });
+}
+```
+🔍 Inspección de Estructura (Debug)
+Una técnica fundamental en el examen es saber recorrer todos los elementos para mostrar su información. Podemos usar Array.from() para tratar las colecciones de HTML como arrays modernos:
+
+```
+function volcarEstructura() {
+    Array.from(document.forms).forEach(f => {
+        console.log(`Formulario: ${f.name} | Elementos: ${f.elements.length}`);
+        
+        Array.from(f.elements).forEach(el => {
+            console.log(`-> Campo: ${el.name || el.id} | Tipo: ${el.type}`);
+        });
+    });
+}
+```

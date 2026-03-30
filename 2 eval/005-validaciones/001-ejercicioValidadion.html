@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Validación Avanzada de Formulario</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background-color: #f4f4f9; }
+        form { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); max-width: 500px; }
+        label { display: block; margin-top: 15px; font-weight: bold; }
+        input, textarea { width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box; }
+        .error { border: 2px solid red; background-color: #ffecec; }
+        .msg-error { color: #b00020; font-size: 13px; margin: 4px 0 0; }
+        button { margin-top: 20px; padding: 10px 20px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <h2>Registro con Validación Estricta</h2>
+    <form id="miFormulario">
+        <label>Nombre: <input type="text" id="nombre"></label>
+        <label>DNI (8 números + letra): <input type="text" id="dni"></label>
+        <label>NIE (X/Y/Z + 7 núm + letra): <input type="text" id="nie"></label>
+        <label>Matrícula (0000 AAA): <input type="text" id="matricula"></label>
+        <label>Contraseña: <input type="password" id="pass"></label>
+        <label>Confirmar Contraseña: <input type="password" id="passConfirm"></label>
+        <label>Descripción (10-100 car.): <textarea id="descripcion"></textarea></label>
+        <label>Fecha de Nacimiento: <input type="date" id="fechaNac"></label>
+
+        <button type="submit">Validar Datos</button>
+        <button type="reset">Limpiar</button>
+    </form>
+
+    <script>
+        const form = document.getElementById("miFormulario");
+        const tablaLetras = "TRWAGMYFPDXBNJZSQVHLCKE";
+
+        // --- FUNCIONES DE APOYO (Basadas en Regex.html y validacion.html) ---
+        function ponerError(elemento, mensaje) {
+            limpiarErrorDeCampo(elemento);
+            elemento.classList.add("error");
+            const p = document.createElement("p");
+            p.className = "msg-error";
+            p.textContent = mensaje;
+            elemento.insertAdjacentElement("afterend", p);
+        }
+
+        function limpiarErrorDeCampo(elemento) {
+            elemento.classList.remove("error");
+            const sig = elemento.nextElementSibling;
+            if (sig && sig.classList.contains("msg-error")) sig.remove();
+        }
+
+        // Foco inicial al cargar
+        window.onload = () => document.getElementById("nombre").focus();
+
+        form.addEventListener("submit", function(e) {
+            e.preventDefault();
+            let valido = true;
+            let primerError = null;
+
+            // 1. NOMBRE: Min 2, letras/espacios, no espacios extremos, empieza por letra
+            const nom = document.getElementById("nombre");
+            const regexNom = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ][a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/;
+            if (nom.value.trim().length < 2 || !regexNom.test(nom.value) || nom.value !== nom.value.trim()) {
+                ponerError(nom, "Mínimo 2 caracteres, solo letras/espacios (sin espacios en extremos) y empezar por letra.");
+                if (!primerError) primerError = nom; valido = false;
+            }
+
+            // 2. DNI: 8 números + letra y validación de letra
+            const dni = document.getElementById("dni");
+            const regexDni = /^[0-9]{8}[A-Z]$/i;
+            if (!regexDni.test(dni.value)) {
+                ponerError(dni, "Formato inválido (8 números y 1 letra).");
+                if (!primerError) primerError = dni; valido = false;
+            } else {
+                const num = dni.value.substring(0, 8);
+                const letra = dni.value.charAt(8).toUpperCase();
+                if (tablaLetras[num % 23] !== letra) {
+                    ponerError(dni, "La letra del DNI no es correcta.");
+                    if (!primerError) primerError = dni; valido = false;
+                }
+            }
+
+            // 3. NIE: X/Y/Z + 7 números + letra
+            const nie = document.getElementById("nie");
+            const regexNie = /^[XYZ][0-9]{7}[A-Z]$/i;
+            if (!regexNie.test(nie.value)) {
+                ponerError(nie, "Formato NIE inválido (X, Y o Z + 7 números + letra).");
+                if (!primerError) primerError = nie; valido = false;
+            } else {
+                let nieMod = nie.value.toUpperCase();
+                let prefijo = nieMod[0].replace("X", "0").replace("Y", "1").replace("Z", "2");
+                let numNie = prefijo + nieMod.substring(1, 8);
+                if (tablaLetras[numNie % 23] !== nieMod[8]) {
+                    ponerError(nie, "La letra del NIE no es correcta.");
+                    if (!primerError) primerError = nie; valido = false;
+                }
+            }
+
+            // 4. MATRÍCULA: 4 números y 3 letras (sin vocales, Ñ, Q)
+            const mat = document.getElementById("matricula");
+            const regexMat = /^[0-9]{4}[BCDFGHJKLMNPRSTVWXYZ]{3}$/i;
+            if (!regexMat.test(mat.value.replace(/\s/g, ""))) {
+                ponerError(mat, "4 números y 3 letras (sin vocales, Ñ o Q).");
+                if (!primerError) primerError = mat; valido = false;
+            }
+
+            // 5. CONTRASEÑA: Letras, núm, - y _, empieza por letra/número, sin espacios
+            const pass = document.getElementById("pass");
+            const regexPass = /^[a-zA-Z0-9][a-zA-Z0-9\-_]*$/;
+            if (!regexPass.test(pass.value)) {
+                ponerError(pass, "Solo letras, números, '-' y '_'. Debe empezar por letra o número.");
+                if (!primerError) primerError = pass; valido = false;
+            }
+
+            // 6. CONFIRMAR CONTRASEÑA
+            const passConf = document.getElementById("passConfirm");
+            if (passConf.value !== pass.value || passConf.value === "") {
+                ponerError(passConf, "Las contraseñas no coinciden.");
+                if (!primerError) primerError = passConf; valido = false;
+            }
+
+            // 7. DESCRIPCIÓN: 10-100 car. y palabras prohibidas
+            const desc = document.getElementById("descripcion");
+            const prohibidas = ["Miguel", "Mate", "CocaCola"];
+            let tieneProhibida = prohibidas.some(p => desc.value.toLowerCase().includes(p.toLowerCase()));
+            if (desc.value.length < 10 || desc.value.length > 100 || tieneProhibida) {
+                ponerError(desc, "Longitud 10-100. No puede contener: Miguel, Mate o CocaCola.");
+                if (!primerError) primerError = desc; valido = false;
+            }
+
+            // 8. FECHA NACIMIENTO: Entre 1910 y hoy
+            const fecha = document.getElementById("fechaNac");
+            const hoy = new Date();
+            const fechaVal = new Date(fecha.value);
+            if (fecha.value === "" || fechaVal > hoy || fechaVal.getFullYear() < 1910) {
+                ponerError(fecha, "Fecha inválida (debe ser posterior a 1910 y no futura).");
+                if (!primerError) primerError = fecha; valido = false;
+            }
+
+            // Foco al primer error
+            if (!valido) primerError.focus();
+            else alert("Formulario válido y enviado.");
+        });
+
+        // Limpiar errores al resetear
+        form.addEventListener("reset", () => {
+            setTimeout(() => {
+                document.querySelectorAll(".error").forEach(el => el.classList.remove("error"));
+                document.querySelectorAll(".msg-error").forEach(el => el.remove());
+                document.getElementById("nombre").focus();
+            }, 0);
+        });
+    </script>
+</body>
+</html>

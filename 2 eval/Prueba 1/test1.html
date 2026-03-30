@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Examen: Gestión de Desarrolladores</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; margin: 30px; background: #f4f7f6; }
+    form { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); max-width: 600px; }
+    label { display: block; margin-top: 15px; font-weight: bold; }
+    input, select, textarea { width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+    .error { border: 2px solid #d93025; background-color: #fce8e6; }
+    .correcto { border: 2px solid #1e8e3e; }
+    .focused { box-shadow: 0 0 5px #1a73e8; border-color: #1a73e8; }
+    .msg-error { color: #d93025; font-size: 12px; margin-top: 5px; }
+    .oculto { display: none; }
+    .btn-container { margin-top: 20px; }
+    button { padding: 10px 20px; cursor: pointer; background: #1a73e8; color: white; border: none; border-radius: 4px; }
+    #resultado { margin-top: 20px; padding: 15px; background: #e8f0fe; border-left: 5px solid #1a73e8; }
+  </style>
+</head>
+<body>
+
+  <h1>Registro de Desarrolladores</h1>
+
+  <form id="formDev">
+    <label for="nombre">Nombre Completo (Mín. 2 letras, solo letras):</label>
+    <input type="text" id="nombre" placeholder="Ej. Juan Pérez">
+
+    <label for="dni">DNI / NIE:</label>
+    <input type="text" id="dni" placeholder="12345678Z o X1234567L">
+
+    <label for="pass">Contraseña (Letras, núm, - y _, empieza por letra/núm):</label>
+    <input type="password" id="pass">
+
+    <label for="passConfirm">Confirmar Contraseña:</label>
+    <input type="password" id="passConfirm">
+
+    <label>
+      <input type="checkbox" id="activo" style="width: auto;"> ¿Está actualmente trabajando?
+    </label>
+
+    <div id="seccionLaboral" class="oculto">
+      <label for="matricula">Matrícula de Vehículo Empresa (4 núm y 3 letras - Sin vocales, Ñ, Q):</label>
+      <input type="text" id="matricula" placeholder="1234BBB">
+
+      <label for="id_estudio">Nivel de Estudios:</label>
+      <select id="id_estudio">
+        <option value="NULL">Sin estudio</option>
+        <option value="Grado">Grado Universitario</option>
+        <option value="Master">Máster</option>
+      </select>
+    </div>
+
+    <label for="descripcion">Descripción Profesional (10-100 car. - Prohibido: 'Miguel', 'CocaCola'):</label>
+    <textarea id="descripcion" rows="3"></textarea>
+
+    <label for="fecha_nac">Fecha de Nacimiento (Mín. 1910, no futura):</label>
+    <input type="date" id="fecha_nac">
+
+    <div class="btn-container">
+      <button type="submit">Registrar Desarrollador</button>
+      <button type="reset" id="btnReset">Limpiar Formulario</button>
+    </div>
+  </form>
+
+  <div id="resultado" class="oculto"></div>
+
+  <script>
+    /* VARIABLES GLOBALES Y TABLA DE DNI
+    */
+    const form = document.getElementById("formDev");
+    const tablaLetras = "TRWAGMYFPDXBNJZSQVHLCKE";
+
+    // TODO 1: 
+    // Crear una función 'ponerError(elemento, mensaje)' que añada la clase 'error' 
+    // al elemento y cree un <p class="msg-error"> justo después del elemento.
+    // (Asegúrate de no duplicar el mensaje si ya existe).
+
+    function ponerError(elemento, mensaje){
+        limpiarError(elemento);
+        elemento.classList.add("error");
+        const p = document.createElement("p");
+        p.className = "msg-error";
+        p.textContent = mensaje;
+        elemento.insertAdjacentElement("afterend",p);
+    }
+
+    // TODO 2:
+    // Crear una función 'limpiarError(elemento)' que quite la clase 'error'
+    // y elimine el mensaje <p class="msg-error"> si existe.
+
+        function limpiarError(elemeto){
+            elemeto.classList.remove("error");
+            const sig = elemento.nextElementSibling;
+            if (sig && sig.classList.contains("msg-error")) {
+                sig.remove();
+            }
+
+        }
+
+    /* EVENTOS DE COMPORTAMIENTO
+    */
+
+    // TODO 3:
+    // Al cargar la página (window.onload), enviar el foco al campo 'nombre'.
+    window.onload = function (){
+        document.getElementById("nombre").focus();
+    }
+
+    // TODO 4:
+    // Implementar que los campos 'nombre', 'dni', 'pass' y 'matricula' 
+    // añadan la clase 'focused' al recibir el foco (focus) 
+    // y la quiten al perderlo (blur).
+
+    const camposFoco = ["nombre","dni","pass","matricula"];
+    camposFoco.forEach(id=>{
+        const el = document.getElementById(id);
+        el.addEventListener("focus", ( ) => el.classList.add("focused"));
+        el.addEventListener("blur", ( ) => el.classList.remove("focused"));
+    })
+
+    // TODO 5:
+    // Restringir el campo 'nombre' en tiempo real (evento input): 
+    // solo debe permitir letras y espacios (usar replace y regex).
+
+    document.getElementById("nombre").addEventListener("input", function() {
+      this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ ]/g, "");
+    });
+
+    // TODO 6:
+    // Control de visibilidad: Si el checkbox 'activo' está marcado, 
+    // mostrar 'seccionLaboral'. Si no, ocultarlo y resetear el select a 'NULL'.
+
+    const activoCheck = document.getElementById("activo");
+    const seccionLaboral = document.getElementById("seccionLaboral");
+    activoCheck.addEventListener("change", function(){
+       if (this.checked) {
+        seccionLaboral.classList.remove("oculto");
+      } else {
+        seccionLaboral.classList.add("oculto");
+        document.getElementById("id_estudio").value = "NULL";
+      } 
+    })
+
+    /* VALIDACIÓN AL ENVIAR (SUBMIT)
+    */
+
+    form.addEventListener("submit", function(e) {
+      e.preventDefault();
+      
+      // TODO 7:
+      // Limpiar todos los errores previos antes de empezar la validación.
+      document.querySelectorAll("input, textarea, select").forEach(limpiarError);
+
+      let valido = true;
+      let primerError = null;
+      const hoy = new Date().toISOString().split('T')[0];
+
+      function validar(elemento, condicion, mensaje) {
+        if (!condicion) {
+          ponerError(elemento, mensaje);
+          if (!primerError) primerError = elemento;
+          valido = false;
+        } else {
+          elemento.classList.add("correcto");
+        }
+      }
+
+      // --- VALIDACIÓN NOMBRE ---
+      // TODO 8: Mínimo 2 caracteres, debe empezar por letra, no espacios al inicio/final.
+
+      const nombre = document.getElementById("nombre");
+      const regexNom = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ][a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/;
+      validar(nombre, 
+        nombre.value.trim().length >= 2 && 
+        regexNom.test(nombre.value) && 
+        nombre.value === nombre.value.trim(), 
+        "Mín. 2 letras, debe empezar por letra e sen espazos extras.");
+
+      // --- VALIDACIÓN DNI / NIE ---
+      // TODO 9: 
+      // - Si empieza por número: validar 8 números + letra (Cálculo de tablaLetras).
+      // - Si empieza por X, Y o Z: convertir a 0, 1 o 2 y validar letra (Cálculo de tablaLetras).
+
+      const dni = document.getElementById("dni");
+      const valDni = dni.value.trim().toUpperCase();
+      const regexDniNie = /^[XYZ0-9][0-9]{7}[A-Z]$/;
+      
+      if (!regexDniNie.test(valDni)) {
+        validar(dni, false, "Formato DNI/NIE incorrecto.");
+      } else {
+        let numero = valDni.substring(0, 8);
+        numero = numero.replace("X", "0").replace("Y", "1").replace("Z", "2");
+        const letra = valDni.charAt(8);
+        validar(dni, tablaLetras[parseInt(numero) % 23] === letra, "A letra do DNI/NIE non coincide.");
+      }
+
+
+      // --- VALIDACIÓN CONTRASEÑA ---
+      // TODO 10: Validar formato (Regex) y que 'passConfirm' sea idéntico a 'pass'.
+
+      const pass = document.getElementById("pass");
+      const passConfirm = document.getElementById("passConfirm");
+      const regexPass = /^[a-zA-Z0-9][a-zA-Z0-9\-_]*$/;
+      validar(pass, regexPass.test(pass.value), "Formato de contrasinal non válido.");
+      validar(passConfirm, passConfirm.value === pass.value && pass.value !== "", "Os contrasinais non coinciden.");
+
+      // --- VALIDACIÓN DESCRIPCIÓN ---
+      // TODO 11: Longitud 10-100 y que no contenga 'Miguel' ni 'CocaCola'.
+      const desc = document.getElementById("descripcion");
+      const prohibidas = ["miguel", "cocacola"];
+      const tieneProhibidas = prohibidas.some(p => desc.value.toLowerCase().includes(p));
+      validar(desc, desc.value.length >= 10 && desc.value.length <= 100 && !tieneProhibidas, 
+        "Debe ter entre 10-100 car. e non conter palabras prohibidas.");
+
+      // --- VALIDACIÓN FECHA ---
+      // TODO 12: No puede ser anterior a 1910 ni posterior a 'hoy'.
+
+      const fecha = document.getElementById("fecha_nac");
+      validar(fecha, fecha.value !== "" && fecha.value >= "1910-01-01" && fecha.value <= hoy, 
+        "Fecha obrigatoria (posterior a 1910 e non futura).");
+
+      // --- VALIDACIÓN SECCIÓN LABORAL (Si está activo) ---
+      // TODO 13: 
+      // - Matrícula: 4 números y 3 letras (sin vocales, Ñ ni Q).
+      // - Estudios: No puede ser "NULL".
+
+      if (activoCheck.checked) {
+        const mat = document.getElementById("matricula");
+        const est = document.getElementById("id_estudio");
+        const regexMat = /^[0-9]{4}[BCDFGHJKLMNPQRSTVWXYZ]{3}$/i;
+        validar(mat, regexMat.test(mat.value.replace(/\s/g, "")), "Matrícula non válida (4 núm e 3 letras sen vogais).");
+        validar(est, est.value !== "NULL", "Debes seleccionar un nivel de estudios.");
+      }
+
+      /* FIN DE VALIDACIÓN
+      */
+
+      // TODO 14:
+      // Si hay errores (!valido): 
+      // - Enviar el foco al 'primerError'.
+      // - No mostrar nada en el div 'resultado'.
+      
+      // TODO 15:
+      // Si todo es correcto:
+      // - Mostrar el div 'resultado' con un resumen de los datos.
+      const res = document.getElementById("resultado");
+      if (!valido) {
+        primerError.focus();
+        res.classList.add("oculto");
+      } else {
+        res.classList.remove("oculto");
+        res.textContent = `Desenvolvedor rexistrado:\n- Nome: ${nombre.value}\n- DNI: ${valDni}\n- Activo: ${activoCheck.checked ? 'Si' : 'Non'}`;
+      }
+    });
+  
+
+    // TODO 16:
+    // Evento reset: Al limpiar el formulario, esperar un instante (setTimeout 0),
+    // limpiar todos los errores visuales y poner el foco en 'nombre'.
+
+    document.getElementById("btnReset").addEventListener("click", function() {
+      setTimeout(() => {
+        document.querySelectorAll("input, textarea, select").forEach(el => {
+          limpiarError(el);
+          el.classList.remove("correcto");
+        });
+        seccionLaboral.classList.add("oculto");
+        document.getElementById("nombre").focus();
+      }, 0);
+    });
+
+  </script>
+</body>
+</html>
