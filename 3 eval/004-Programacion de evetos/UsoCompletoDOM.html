@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Examen Final DOM: Tienda Online Completa</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background-color: #f8fafc; padding: 20px; display: flex; gap: 20px; }
+    
+    /* Contenedores Principales */
+    .seccion { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    #bloqueTienda { flex: 2; }
+    #bloqueCarrito { flex: 1.5; border-left: 4px solid #e2e8f0; }
+
+    /* Tarjetas de Producto */
+    .grid-productos { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-top: 20px; }
+    .producto { border: 2px solid #e2e8f0; padding: 15px; border-radius: 10px; cursor: pointer; transition: 0.3s; }
+    .producto.resaltado { border-color: #3b82f6; background-color: #eff6ff; }
+    .producto h3 { margin: 0 0 10px 0; font-size: 1.1rem; }
+    
+    /* Carrito */
+    .tabla-carrito { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    .tabla-carrito th { text-align: left; padding: 10px; border-bottom: 2px solid #eee; }
+    .fila-carrito { cursor: pointer; border-bottom: 1px solid #f1f5f9; }
+    .fila-carrito td { padding: 10px; }
+    .fila-carrito.resaltada { background-color: #fef9c3; }
+
+    /* Botones y Utilidades */
+    button { cursor: pointer; padding: 5px 10px; border-radius: 4px; border: 1px solid #ccc; font-weight: bold; }
+    .btn-add { width: 100%; background: #22c55e; color: white; border: none; margin-top: 10px; }
+    .btn-qty { background: #f1f5f9; width: 30px; }
+    .total-footer { margin-top: 20px; font-size: 1.4rem; text-align: right; color: #1e293b; border-top: 2px solid #1e293b; padding-top: 10px; }
+  </style>
+</head>
+<body>
+    
+</body>
+
+</html>
