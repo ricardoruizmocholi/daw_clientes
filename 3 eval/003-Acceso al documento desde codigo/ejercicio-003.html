@@ -1,0 +1,190 @@
+<!--
+Enunciado
+
+A partir del ejemplo de creación:
+	- Añade un botón para marcar tareas como completadas
+		- Las tareas guardarán un atributo "data-estado" que 			puede ser pendiente o completada
+		- El botón cambiará ese estado
+		- En función del estado se cambiará un texto en la tarea 		y el css de esta
+	- Añade un segundo botón para poder editar el texto de la tarea
+
+Ampliación:
+	- Añade title a los botones
+	- Añade una imagen a la tarea
+		- Las tareas pendientes tienen una imagen y las 			completadas otra
+	- Añade un enlace a la tarea
+		- El link de la web se guarda en un atributo
+
+Ampliación 2:
+	- Añade un botón para asignar una prioridad a cada tarea
+		- La prioridad se guarda como atributo
+	- Añade un botón que reorganice automáticamente las tareas por 	prioridad
+		- Esta reorganización se hará sustituyendo en pantalla 			unas tareas por otras
+
+Ampliación 3:
+	- Refactoriza los listeners de los botones para que existan como funciones independientes a la función crear tarea
+		- Estas funciones tienen que acceder a los elementos de la tarjeta navegando por la jerarquía del DOM y no directamente accediendo a las variables de la función anterior
+
+--><!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Examen DOM: Gestor de Tareas Avanzado</title>
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #f4f6f8; padding: 30px; }
+    .contenedor { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    
+    /* Estilos de la tarjeta de tarea */
+    .tarea { 
+      display: flex; align-items: center; gap: 15px; padding: 15px; margin-bottom: 10px; 
+      border: 2px solid #ddd; border-radius: 8px; transition: 0.3s;
+    }
+    .tarea img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; }
+    
+    /* Estados visuales (Ampliación 1) */
+    .tarea[data-estado="pendiente"] { border-color: #f59e0b; background-color: #fffbeb; }
+    .tarea[data-estado="completada"] { border-color: #10b981; background-color: #ecfdf5; opacity: 0.8; }
+    .tarea[data-estado="completada"] strong { text-decoration: line-through; color: #059669; }
+
+    /* Prioridades (Ampliación 2) */
+    .tarea[data-prioridad="3"] { border-left: 10px solid #ef4444; } /* Alta */
+    .tarea[data-prioridad="2"] { border-left: 10px solid #3b82f6; } /* Media */
+    .tarea[data-prioridad="1"] { border-left: 10px solid #94a3b8; } /* Baja */
+
+    .info-tarea { flex-grow: 1; }
+    .controles { display: flex; gap: 5px; }
+    button { cursor: pointer; padding: 5px 10px; border-radius: 4px; border: 1px solid #ccc; }
+    
+    .panel-nuevo { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 2px solid #eee; }
+    input, select { padding: 8px; margin-right: 5px; }
+  </style>
+</head>
+<body>
+
+<div class="contenedor">
+  <h1>Gestor de Tareas Pro</h1>
+  
+  <div class="panel-nuevo">
+    <input type="text" id="inputTarea" placeholder="Nombre de la tarea...">
+    <input type="text" id="inputLink" placeholder="URL (Wikipedia/Web)...">
+    <select id="selectPrioridad">
+      <option value="3">Prioridad Alta</option>
+      <option value="2">Prioridad Media</option>
+      <option value="1">Prioridad Baja</option>
+    </select>
+    <button id="btnCrear" onclick="crearTarea()">Añadir Tarea</button>
+    <button onclick="reorganizarPrioridad()" style="background: #4f46e5; color: white;">Reorganizar por Prioridad</button>
+  </div>
+
+  <ul id="listaTareas"></ul>
+</div>
+
+<script>
+  // Constantes de imágenes (Ampliación 1)
+  const IMG_PENDIENTE = "https://cdn-icons-png.flaticon.com/512/447/447147.png";
+  const IMG_COMPLETADA = "https://cdn-icons-png.flaticon.com/512/1443/1443000.png";
+
+  function crearTarea() {
+    const nombre = document.getElementById("inputTarea").value;
+    const link = document.getElementById("inputLink").value || "#";
+    const prioridad = document.getElementById("selectPrioridad").value;
+
+    if (!nombre) return alert("Escribe un nombre");
+
+    const lista = document.getElementById("listaTareas");
+    
+    // 1. Crear elemento raíz (Tarjeta)
+    const li = document.createElement("li");
+    li.className = "tarea";
+    li.setAttribute("data-estado", "pendiente"); // 
+    li.setAttribute("data-prioridad", prioridad); // [cite: 4]
+    li.setAttribute("data-url", link); // [cite: 4]
+
+    // 2. Construir estructura interna (Ampliación 1)
+    li.innerHTML = `
+      <img src="${IMG_PENDIENTE}" alt="Estado">
+      <div class="info-tarea">
+        <strong class="titulo">${nombre}</strong><br>
+        <small>Prioridad: <span class="txt-prio">${prioridad}</span></small><br>
+        <a href="${link}" target="_blank" class="enlace">Ver info</a>
+      </div>
+      <div class="controles">
+        <button onclick="alternarEstado(event)" title="Cambiar estado">✔</button>
+        <button onclick="editarTarea(event)" title="Editar texto">✏</button>
+        <button onclick="cambiarPrioridad(event)" title="Subir prioridad">⚡</button>
+        <button onclick="eliminarTarea(event)" title="Borrar" style="color:red">✖</button>
+      </div>
+    `;
+
+    lista.appendChild(li);
+    limpiarFormulario();
+  }
+
+  // --- AMPLIACIÓN 3: Funciones independientes navegando por el DOM ---
+  // Se usa event.currentTarget para subir al padre y querySelector para bajar
+
+  function alternarEstado(e) {
+    const boton = e.currentTarget;
+    const tarjeta = boton.parentElement.parentElement; // Navegación jerárquica
+    const imagen = tarjeta.querySelector("img");
+    const titulo = tarjeta.querySelector(".titulo");
+
+    if (tarjeta.getAttribute("data-estado") === "pendiente") {
+      tarjeta.setAttribute("data-estado", "completada");
+      imagen.src = IMG_COMPLETADA;
+    } else {
+      tarjeta.setAttribute("data-estado", "pendiente");
+      imagen.src = IMG_PENDIENTE;
+    }
+  }
+
+  function editarTarea(e) {
+    const tarjeta = e.currentTarget.parentElement.parentElement;
+    const titulo = tarjeta.querySelector(".titulo");
+    const nuevoTexto = prompt("Nuevo nombre de la tarea:", titulo.textContent);
+    
+    if (nuevoTexto) {
+      titulo.textContent = nuevoTexto;
+    }
+  }
+
+  function cambiarPrioridad(e) {
+    const tarjeta = e.currentTarget.parentElement.parentElement;
+    let prio = parseInt(tarjeta.getAttribute("data-prioridad"));
+    
+    // Ciclo de prioridad: 1 -> 2 -> 3 -> 1
+    prio = (prio % 3) + 1;
+    
+    tarjeta.setAttribute("data-prioridad", prio);
+    tarjeta.querySelector(".txt-prio").textContent = prio;
+  }
+
+  function eliminarTarea(e) {
+    const tarjeta = e.currentTarget.parentElement.parentElement;
+    tarjeta.parentElement.removeChild(tarjeta); //
+  }
+
+  // --- AMPLIACIÓN 2: Reorganización automática ---
+  function reorganizarPrioridad() {
+    const lista = document.getElementById("listaTareas");
+    // Convertimos HTMLCollection a Array para poder ordenar
+    const tareas = Array.from(lista.children);
+
+    // Ordenar de mayor a menor prioridad
+    tareas.sort((a, b) => {
+      return b.getAttribute("data-prioridad") - a.getAttribute("data-prioridad");
+    });
+
+    // Sustitución en pantalla (limpiar y reinsertar ordenado)
+    lista.innerHTML = "";
+    tareas.forEach(tarea => lista.appendChild(tarea));
+  }
+
+  function limpiarFormulario() {
+    document.getElementById("inputTarea").value = "";
+    document.getElementById("inputLink").value = "";
+  }
+</script>
+
+</body>
+</html>

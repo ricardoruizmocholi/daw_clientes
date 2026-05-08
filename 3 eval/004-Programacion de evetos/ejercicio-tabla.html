@@ -1,0 +1,173 @@
+<!--
+Crea una tabla de videojuegos:
+	- Cada juego tendrá:
+		- id
+		- Nombre
+		- Estudio
+		- PEGI
+	- Junto con la información del juego, en cada fila habrá:
+		- Un botón de editar
+		- Un botón de eliminar
+		- Estos botones no resaltarán a su propia fila
+	- Cada fila podrá ser resaltada al clicar
+		- Solo una a la vez
+		- El listener para esta acción estará en la propia tabla
+			- Se tendrá que comprobar que el elemento clicado es una fila
+	- Añade un formulario para añadir tareas
+-->
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Examen DOM: Tabla de Videojuegos</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f0f2f5; padding: 40px; }
+    .contenedor { max-width: 900px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+    
+    /* Estilos de la Tabla */
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+    th { background-color: #f8fafc; color: #64748b; text-transform: uppercase; font-size: 12px; }
+
+    /* Clase para resaltar fila (Ampliación: Solo una a la vez) */
+    .fila-resaltada { background-color: #e0f2fe !important; border-left: 5px solid #0ea5e9; }
+    
+    tr { cursor: pointer; transition: background 0.2s; }
+    tr:hover { background-color: #f1f5f9; }
+
+    /* Formulario */
+    .formulario { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 30px; padding: 15px; background: #f8fafc; border-radius: 8px; }
+    input, select { padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; }
+    button { cursor: pointer; padding: 8px 15px; border-radius: 6px; border: none; font-weight: bold; }
+    
+    .btn-add { background-color: #22c55e; color: white; }
+    .btn-edit { background-color: #3b82f6; color: white; margin-right: 5px; }
+    .btn-delete { background-color: #ef4444; color: white; }
+  </style>
+</head>
+<body>
+
+<div class="contenedor">
+  <h1>Catálogo de Videojuegos</h1>
+
+  <div class="formulario">
+    <input type="text" id="inNombre" placeholder="Nombre del juego">
+    <input type="text" id="inEstudio" placeholder="Estudio / Desarrolladora">
+    <select id="inPegi">
+      <option value="3">PEGI 3</option>
+      <option value="12">PEGI 12</option>
+      <option value="16">PEGI 16</option>
+      <option value="18">PEGI 18</option>
+    </select>
+    <button class="btn-add" onclick="agregarJuego()">Añadir Juego</button>
+  </div>
+
+  <table id="tablaJuegos">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Estudio</th>
+        <th>PEGI</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody id="cuerpoTabla">
+      </tbody>
+  </table>
+</div>
+
+<script>
+  let idContador = 1;
+
+  function agregarJuego() {
+    const nombre = document.getElementById("inNombre").value;
+    const estudio = document.getElementById("inEstudio").value;
+    const pegi = document.getElementById("inPegi").value;
+
+    if (!nombre || !estudio) return alert("Rellena todos los campos");
+
+    const tbody = document.getElementById("cuerpoTabla");
+
+    // 1. Creación de la fila (Referencia: creacionDeElementos.html)
+    const tr = document.createElement("tr");
+    tr.setAttribute("data-id", idContador);
+
+    // 2. Construcción del contenido
+    tr.innerHTML = `
+      <td>${idContador}</td>
+      <td class="celda-nombre">${nombre}</td>
+      <td class="celda-estudio">${estudio}</td>
+      <td><span class="badge-pegi">${pegi}</span></td>
+      <td>
+        <button class="btn-edit" onclick="editarJuego(event)" title="Editar información">✏ Editar</button>
+        <button class="btn-delete" onclick="eliminarJuego(event)" title="Eliminar de la lista">✖ Borrar</button>
+      </td>
+    `;
+
+    tbody.appendChild(tr);
+    idContador++;
+    limpiarFormulario();
+  }
+
+  /* --- GESTIÓN DE RESALTADO (Delegación de eventos en la tabla) --- */
+  document.getElementById("tablaJuegos").addEventListener("click", function(e) {
+    // 1. Comprobar que el clic NO ha sido en un botón (Requisito: no resaltar si se edita/borra)
+    if (e.target.tagName === "BUTTON") return;
+
+    // 2. Localizar la fila (tr) más cercana al elemento clicado
+    const filaClicada = e.target.closest("tr");
+    
+    // 3. Comprobar que el clic es dentro del cuerpo de la tabla (no en el thead)
+    if (filaClicada && filaClicada.parentElement.tagName === "TBODY") {
+      
+      // 4. Lógica de "Solo una a la vez" (Referencia: ejercicio-003.html)
+      const filas = document.querySelectorAll("#cuerpoTabla tr");
+      filas.forEach(f => f.classList.remove("fila-resaltada"));
+
+      // 5. Aplicar resalte
+      filaClicada.classList.add("fila-resaltada");
+      
+      console.log("Fila seleccionada ID:", filaClicada.getAttribute("data-id"));
+    }
+  });
+
+  /* --- FUNCIONES INDEPENDIENTES (Referencia: Ampliación 3 / recorridoRelaciones.html) --- */
+
+  function eliminarJuego(e) {
+    // Evitamos que el clic llegue a la fila (aunque ya lo controlamos arriba)
+    e.stopPropagation(); 
+    
+    // Navegación: Botón -> TD -> TR
+    const fila = e.currentTarget.parentElement.parentElement;
+    
+    if (confirm("¿Seguro que quieres eliminar este juego?")) {
+      fila.parentElement.removeChild(fila);
+    }
+  }
+
+  function editarJuego(e) {
+    e.stopPropagation();
+    const fila = e.currentTarget.parentElement.parentElement;
+    
+    // Acceso a hijos específicos mediante querySelector
+    const nombreActual = fila.querySelector(".celda-nombre");
+    const estudioActual = fila.querySelector(".celda-estudio");
+
+    const nuevoNombre = prompt("Nuevo nombre:", nombreActual.textContent);
+    const nuevoEstudio = prompt("Nuevo estudio:", estudioActual.textContent);
+
+    if (nuevoNombre) nombreActual.textContent = nuevoNombre;
+    if (nuevoEstudio) estudioActual.textContent = nuevoEstudio;
+  }
+
+  function limpiarFormulario() {
+    document.getElementById("inNombre").value = "";
+    document.getElementById("inEstudio").value = "";
+    document.getElementById("inNombre").focus();
+  }
+</script>
+
+</body>
+</html>

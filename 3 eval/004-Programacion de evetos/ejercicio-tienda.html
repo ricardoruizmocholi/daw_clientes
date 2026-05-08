@@ -1,0 +1,223 @@
+<!--
+
+Crea una página que simule una zona de promociones de una tienda online
+
+Dentro del documento debe haber:
+	- Un contenedor exterior que represente el bloque general de promociones
+	- Una sección intermedia que represente una oferta concreta
+	- Un enlace interior con el texto “Ver oferta”
+
+Asocia listeners de click en fase de captura y en fase de burbujeo a los tres elementos
+Cuando el usuario pulse el enlace interior, se deberá mostrar en una zona de resultado:
+	- El orden en que se ejecutan los listeners
+	- La fase actual del evento
+	- El identificador del target
+	- Un contador de quien ha recibido cada click
+
+Ampliación:
+	- Añade una funcionalidad de carrito
+	- Se puede clicar en un objeto para añadirlo al carrito
+	- El objeto tiene:
+		- Nombre
+		- Precio
+		- Cantidad
+		- Botón de incrementar cantidad
+		- Botón de disminuir cantidad
+	- Se puede seleccionar el objeto para resaltarlo
+	- Modificar una cantidad recalcula el precio total del carrito
+-->
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Examen DOM: Event Flow y Carrito Pro</title>
+  <style>
+    body { font-family: sans-serif; background: #f0f2f5; padding: 20px; display: flex; flex-direction: column; gap: 30px; }
+    
+    /* --- Estilos Zona Promociones (Event Flow) --- */
+    #bloqueGral { padding: 30px; background: #fff; border: 3px solid #333; border-radius: 10px; }
+    #ofertaConcreta { padding: 20px; background: #e0f2fe; border: 2px dashed #0369a1; border-radius: 8px; }
+    #promoLink { display: inline-block; padding: 10px 20px; background: #0369a1; color: white; text-decoration: none; border-radius: 5px; }
+    
+    .log-zona { background: #1e293b; color: #38bdf8; padding: 15px; border-radius: 8px; font-family: monospace; margin-top: 10px; }
+
+    /* --- Estilos Carrito (Ampliación) --- */
+    .carrito-container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .tabla-carrito { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    .tabla-carrito th, .tabla-carrito td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
+    
+    .fila-resaltada { background-color: #fef9c3 !important; outline: 2px solid #facc15; }
+    
+    .btn-qty { padding: 5px 10px; cursor: pointer; border: 1px solid #ccc; background: white; font-weight: bold; }
+    .total-seccion { text-align: right; font-size: 1.5rem; margin-top: 15px; color: #1e293b; }
+  </style>
+</head>
+<body>
+
+  <section class="contenedor">
+    <h2>1. Simulación de Flujo de Eventos (Captura/Burbujeo)</h2>
+    <div id="bloqueGral" data-id="CONTENEDOR-EXTERIOR">
+      BLOQUE GENERAL (Exterior)
+      <div id="ofertaConcreta" data-id="SECCION-INTERMEDIA">
+        OFERTA CONCRETA (Intermedia)
+        <br><br>
+        <a href="#" id="promoLink" data-id="ENLACE-INTERIOR">Ver oferta</a>
+      </div>
+    </div>
+
+    <div class="log-zona">
+      <strong>Registro de Eventos:</strong>
+      <div id="logOrden">Pulsa el botón azul para ver el flujo...</div>
+    </div>
+  </section>
+
+  <section class="carrito-container">
+    <h2>2. Carrito de Compra Dinámico</h2>
+    
+    <div class="formulario">
+      <input type="text" id="cartNombre" placeholder="Producto">
+      <input type="number" id="cartPrecio" placeholder="Precio €">
+      <button onclick="agregarAlCarrito()">Añadir al Carrito</button>
+    </div>
+
+    <table class="tabla-carrito" id="tablaCarrito">
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Precio Unitario</th>
+          <th>Cantidad</th>
+          <th>Subtotal</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="cuerpoCarrito"></tbody>
+    </table>
+
+    <div class="total-seccion">
+      Total: <span id="precioTotal">0</span>€
+    </div>
+  </section>
+
+  <script>
+    /* ============================================================
+       PARTE 1: LÓGICA DE CAPTURA Y BURBUJEO
+       ============================================================ */
+    const ids = ["bloqueGral", "ofertaConcreta", "promoLink"];
+    const logOrden = document.getElementById("logOrden");
+    let contadores = { "bloqueGral": 0, "ofertaConcreta": 0, "promoLink": 0 };
+    let secuencia = [];
+
+    function registrarClick(e) {
+      // Obtenemos fase: 1=Captura, 2=Target, 3=Burbujeo
+      const fases = ["", "CAPTURA", "TARGET", "BURBUJEO"];
+      const faseActual = fases[e.eventPhase];
+      const idElemento = e.currentTarget.id;
+      const dataId = e.currentTarget.getAttribute("data-id");
+
+      // Actualizar contador
+      contadores[idElemento]++;
+
+      // Registrar secuencia
+      const info = `[Fase: ${faseActual}] Recibido por: ${dataId} (Target real: ${e.target.id})`;
+      secuencia.push(info);
+
+      // Si es el último paso del burbujeo (en el elemento más exterior), mostramos resultados
+      if (idElemento === "bloqueGral" && e.eventPhase === 3) {
+        mostrarLog();
+      }
+    }
+
+    function mostrarLog() {
+      let html = "<ul>";
+      secuencia.forEach(paso => html += `<li>${paso}</li>`);
+      html += "</ul><hr>";
+      html += `<strong>Clicks totales:</strong> Ext: ${contadores.bloqueGral} | Int: ${contadores.ofertaConcreta} | Link: ${contadores.promoLink}`;
+      logOrden.innerHTML = html;
+      secuencia = []; // Limpiar para el próximo click
+    }
+
+    // Asignar listeners en ambas fases (true = captura, false = burbujeo)
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      el.addEventListener("click", registrarClick, true);  // Captura
+      el.addEventListener("click", registrarClick, false); // Burbujeo
+    });
+
+
+    /* ============================================================
+       PARTE 2: LÓGICA DEL CARRITO (Ampliación)
+       ============================================================ */
+    function agregarAlCarrito() {
+      const nombre = document.getElementById("cartNombre").value;
+      const precio = parseFloat(document.getElementById("cartPrecio").value);
+
+      if (!nombre || isNaN(precio)) return alert("Datos no válidos");
+
+      const tbody = document.getElementById("cuerpoCarrito");
+      const tr = document.createElement("tr");
+      tr.setAttribute("data-precio", precio);
+      tr.setAttribute("data-cantidad", 1);
+
+      tr.innerHTML = `
+        <td>${nombre}</td>
+        <td>${precio}€</td>
+        <td>
+          <button class="btn-qty" onclick="cambiarCantidad(event, -1)">-</button>
+          <span class="qty-val">1</span>
+          <button class="btn-qty" onclick="cambiarCantidad(event, 1)">+</button>
+        </td>
+        <td class="subtotal">${precio}€</td>
+        <td><button onclick="eliminarFila(event)" style="color:red">Eliminar</button></td>
+      `;
+
+      // Listener para resaltar (Solo uno a la vez - Referencia: Ejercicio Videojuegos)
+      tr.addEventListener("click", function(e) {
+        if(e.target.tagName === "BUTTON") return; // No resaltar si pulsa botones
+        
+        document.querySelectorAll("#cuerpoCarrito tr").forEach(f => f.classList.remove("fila-resaltada"));
+        this.classList.add("fila-resaltada");
+      });
+
+      tbody.appendChild(tr);
+      recalcularTotal();
+    }
+
+    function cambiarCantidad(e, delta) {
+      // Navegación jerárquica: Botón -> TD -> TR
+      const fila = e.currentTarget.parentElement.parentElement;
+      let cant = parseInt(fila.getAttribute("data-cantidad"));
+      const precioUni = parseFloat(fila.getAttribute("data-precio"));
+
+      cant += delta;
+      if (cant < 1) return; // Mínimo 1
+
+      // Actualizar Atributos y DOM
+      fila.setAttribute("data-cantidad", cant);
+      fila.querySelector(".qty-val").textContent = cant;
+      fila.querySelector(".subtotal").textContent = (cant * precioUni).toFixed(2) + "€";
+
+      recalcularTotal();
+    }
+
+    function eliminarFila(e) {
+      const fila = e.currentTarget.parentElement.parentElement;
+      fila.remove();
+      recalcularTotal();
+    }
+
+    function recalcularTotal() {
+      const filas = document.querySelectorAll("#cuerpoCarrito tr");
+      let total = 0;
+
+      filas.forEach(fila => {
+        const precio = parseFloat(fila.getAttribute("data-precio"));
+        const cant = parseInt(fila.getAttribute("data-cantidad"));
+        total += (precio * cant);
+      });
+
+      document.getElementById("precioTotal").textContent = total.toFixed(2);
+    }
+  </script>
+</body>
+</html>
