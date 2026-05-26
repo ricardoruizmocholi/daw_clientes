@@ -32,7 +32,98 @@
   </style>
 </head>
 <body>
-    
+    <section id="bloqueTienda" class="seccion">
+        <h2>Catalogo de Productos</h2>
+        <div class="grid-productos">
+
+            <article class="producto" data-nombre="Ratón Gaming" data-precio="45">
+                <h3>Ratón Gaming</h3>
+                <p>Precio: <strong>45€</strong></p>
+                <button data-action="add" class="btn-add">Añadir al carrito</button>
+            </article>
+
+            <article class="producto" data-nombre="Teclado Mecánico" data-precio="85">
+                <h3>Teclado Mecánico</h3>
+                <p>Precio: <strong>85€</strong></p>
+                <button data-action="add" class="btn-add">Añadir al carrito</button>
+            </article>
+
+            <article class="producto" data-nombre="Monitor 24'" data-precio="150">
+                <h3>Monitor 24"</h3>
+                <p>Precio: <strong>150€</strong></p>
+                <button data-action="add" class="btn-add">Añadir al carrito</button>
+            </article>
+
+        </div>
+    </section>
+
+    <section id="bloqueCarrito" class="seccion">
+        <h2>Tu carrito</h2>
+        <table class="tabla-carrito">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody id="cuerpoCarrito">
+
+            </tbody>
+
+        </table>
+        <div class="total-footer">
+            Total: <span id="sumaTotal">0</span>€
+        </div>
+    </section>
+    <script>
+        // Referencias a los contenedores grandes para los Listeners
+        const tienda = document.getElementById('bloqueTienda');
+        const carrito = document.getElementById('bloqueCarrito');
+        const cuerpoCarrito = document.getElementById('cuerpoCarrito');
+
+        // Listener de tienda
+
+        tienda.addEventListener('click', function(event){
+            //Localizar la tarjeta de productos mas cercana (navegacion ascendente)
+            const tarjeta = event.target.closest('.producto');
+
+            //Si no encuentra tarjeta te sales
+            if(!tarjeta) return;
+
+            // 1ª accion: Resaltar el producto 
+
+            if(event.target.dataset.action !== "add"){
+                document.querySelectorAll(".producto").forEach(producto => producto.classList.remove('resaltado'));
+                tarjeta.classList.add('resaltado');
+            }
+
+            //2ª accion: Añadir producto al carrito
+            if(event.target.dataset.action === "add"){
+                // Navegacion por el dom para obtener datos para la tarjeta
+                const nombre = tarjeta.getAttribute('data-nombre');
+                const precio = tarjeta.getAttribute('data-precio');
+
+                agregarOActualizarCarrito(nombre, precio);
+            }
+
+        });
+        function agregarOActualizarCarrito(nombre, precio){
+            const filasExistentes = cuerpoCarrito.querySelectorAll('.fila-carrito');
+            let encontrada = null;
+
+            filasExistentes.forEach(fila => {
+                if (fila.querySelector('.nombre-cart').textContent === nombre){
+                    encontrada = fila;
+                }
+            });
+        }
+
+
+
+    </script>
+
 </body>
 
 </html>
