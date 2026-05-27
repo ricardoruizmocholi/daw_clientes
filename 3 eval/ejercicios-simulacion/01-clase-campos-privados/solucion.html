@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Solución 01 — Clase Producto</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 30px; background: #f4f6f8; color: #222; }
+    .panel { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 4px 14px rgba(0,0,0,0.08); max-width: 680px; margin: 0 auto; }
+    h1 { margin-top: 0; font-size: 1.4rem; }
+    .solucion { background: #fffbeb; border: 2px solid #f59e0b; border-radius: 8px; padding: 10px 16px; margin-bottom: 20px; font-size: 13px; }
+    .ok  { background: #ecfdf5; border: 2px solid #22c55e; border-radius: 8px; padding: 14px; margin-top: 16px; }
+    pre { background: #f1f5f9; padding: 14px; border-radius: 8px; font-size: 13px; }
+  </style>
+</head>
+<body>
+<div class="panel">
+  <h1>Solución 01 — Clase Producto</h1>
+  <div class="solucion">⚠️ Intenta resolver el ejercicio antes de consultar esta solución.</div>
+  <div id="salida"></div>
+</div>
+
+<script>
+  // ===================================================
+  // SOLUCIÓN COMPLETA — Clase Producto
+  // ===================================================
+  class Producto {
+    // Paso 1: campos privados
+    #nombre;
+    #precio;
+    #stock;
+    #categoria;
+
+    // Paso 2: constructor llama a setters (nunca asigna directo a #campo)
+    constructor(nombre, precio, stock, categoria) {
+      this.setNombre(nombre);
+      this.setPrecio(precio);
+      this.setStock(stock);
+      this.setCategoria(categoria);
+    }
+
+    // Paso 3: getters
+    getNombre()    { return this.#nombre; }
+    getPrecio()    { return this.#precio; }
+    getStock()     { return this.#stock; }
+    getCategoria() { return this.#categoria; }
+
+    // Paso 4: setters con validación
+    setNombre(nombre)     { this.#nombre    = String(nombre).trim(); }
+    setCategoria(cat)     { this.#categoria = String(cat).trim(); }
+
+    setPrecio(precio) {
+      const p = Number(precio);
+      if (isNaN(p) || p < 0) throw new Error("El precio no puede ser negativo.");
+      this.#precio = p;
+    }
+
+    setStock(stock) {
+      const s = Number(stock);
+      if (isNaN(s) || s < 0) throw new Error("El stock no puede ser negativo.");
+      this.#stock = s;
+    }
+
+    // Paso 5: getDescripcion
+    getDescripcion() {
+      return `${this.#nombre} (${this.#precio.toFixed(2)} €) — Stock: ${this.#stock} [${this.#categoria}]`;
+    }
+
+    // Paso 6: restarStock
+    restarStock(cantidad) {
+      if (this.#stock < cantidad) return false;
+      this.#stock -= cantidad;
+      return true;
+    }
+
+    // Paso 7: agregarStock
+    agregarStock(cantidad) {
+      this.#stock += Number(cantidad);
+    }
+  }
+
+  // Pruebas
+  const salida = document.getElementById("salida");
+  const p = new Producto("Ratón Gaming", 45, 10, "Periféricos");
+  const lineas = [
+    p.getDescripcion(),
+    "Venta de 3 unidades: " + p.restarStock(3),
+    "Stock restante: " + p.getStock(),
+    "Venta de 10 unidades (sin stock): " + p.restarStock(10),
+    "Stock después del intento: " + p.getStock()
+  ];
+  p.agregarStock(5);
+  lineas.push("Reponer 5 unidades. Stock final: " + p.getStock());
+  salida.innerHTML = `<div class="ok"><strong>✅ Resultado correcto</strong><pre>${lineas.join("\n")}</pre></div>`;
+</script>
+</body>
+</html>

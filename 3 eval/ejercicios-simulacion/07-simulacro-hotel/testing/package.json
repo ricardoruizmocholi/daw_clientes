@@ -1,0 +1,7 @@
+{
+  "name": "simulacro-07-testing",
+  "version": "1.0.0",
+  "description": "Tests Jest — Simulacro 07 Hotel",
+  "scripts": { "test": "jest" },
+  "devDependencies": { "jest": "^29.0.0" }
+}

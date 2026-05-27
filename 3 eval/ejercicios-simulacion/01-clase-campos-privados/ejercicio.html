@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Ejercicio 01 — Clase Producto</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 30px; background: #f4f6f8; color: #222; }
+    .panel { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 4px 14px rgba(0,0,0,0.08); max-width: 680px; margin: 0 auto; }
+    h1 { margin-top: 0; font-size: 1.4rem; }
+    .nivel { background: #dcfce7; color: #166534; padding: 3px 12px; border-radius: 999px; font-size: 12px; font-weight: bold; }
+    pre { background: #f1f5f9; padding: 14px; border-radius: 8px; font-size: 13px; }
+    code { background: #e2e8f0; padding: 2px 6px; border-radius: 4px; }
+    .ok  { background: #ecfdf5; border: 2px solid #22c55e; border-radius: 8px; padding: 14px; margin-top: 16px; }
+    .fail{ background: #fef2f2; border: 2px solid #ef4444; border-radius: 8px; padding: 14px; margin-top: 16px; }
+    ul { line-height: 2; }
+  </style>
+</head>
+<body>
+<div class="panel">
+  <h1>Ejercicio 01 — Clase con campos privados <span class="nivel">⭐ Fácil</span></h1>
+
+  <h2>Objetivo</h2>
+  <p>Implementa la clase <code>Producto</code> que representa un artículo de tienda online.</p>
+
+  <h2>Requisitos</h2>
+  <ul>
+    <li>Campos privados: <code>#nombre</code>, <code>#precio</code>, <code>#stock</code>, <code>#categoria</code></li>
+    <li>Constructor: <code>constructor(nombre, precio, stock, categoria)</code> — llama a los setters</li>
+    <li>Getters: <code>getNombre()</code>, <code>getPrecio()</code>, <code>getStock()</code>, <code>getCategoria()</code></li>
+    <li>Setter <code>setPrecio(p)</code>: lanza <code>Error</code> si <code>p &lt; 0</code></li>
+    <li>Setter <code>setStock(s)</code>: lanza <code>Error</code> si <code>s &lt; 0</code></li>
+    <li>Método <code>getDescripcion()</code> → <code>"Ratón Gaming (45.00 €) — Stock: 10 [Periféricos]"</code></li>
+    <li>Método <code>restarStock(cantidad)</code>: si hay stock suficiente → resta y devuelve <code>true</code>; si no → <code>false</code></li>
+    <li>Método <code>agregarStock(cantidad)</code>: suma al stock actual</li>
+  </ul>
+
+  <h2>Salida esperada</h2>
+  <pre id="esperado">Ratón Gaming (45.00 €) — Stock: 10 [Periféricos]
+Venta de 3 unidades: true
+Stock restante: 7
+Venta de 10 unidades (sin stock): false
+Stock después del intento: 7
+Reponer 5 unidades. Stock final: 12</pre>
+
+  <div id="salida"></div>
+</div>
+
+<script>
+  // ===================================================
+  // TODO 1: Declara la clase Producto con campos privados
+  // #nombre, #precio, #stock, #categoria
+  // ===================================================
+  class Producto {
+    // Pasi 1 campos privados
+    #nombre;
+    #precio;
+    #stock;
+    #categoria;
+
+
+    // TODO 2: constructor(nombre, precio, stock, categoria)
+    // Asigna los valores llamando a los setters correspondientes.
+    constructor(nombre,precio ,stock, categorio){
+      this.setNombre(nombre);
+      this.setPrecio(precio);
+      this.setStock(stock);
+      this.setCategoria(categorio);
+    }
+    // TODO 3: Getters — getNombre(), getPrecio(), getStock(), getCategoria()
+    
+    getNombre()    { return this.#nombre; }
+    getPrecio()    { return this.#precio; }
+    getStock()     { return this.#stock; }
+    getCategoria() { return this.#categoria; }
+    // TODO 4: Setters
+    // setNombre(nombre)   → String(nombre).trim()
+    // setCategoria(cat)   → String(cat).trim()
+    setNombre(nombre) {this.#nombre = String(nombre).trim()}
+    setCategoria(cat) {this.#categoria = String(cat).trim()}
+    // setPrecio(precio)   → Number, lanza Error si < 0
+    // setStock(stock)     → Number, lanza Error si < 0
+    setPrecio(precio){
+      const p = Number(precio);
+      if(isNaN(p) || p<0) throw new Error("el precion no puede ser negatico")
+      this.#precio = p;
+    }
+
+    setStock(stock) {
+      const s = Number(stock);
+      if (isNaN(s) || s < 0) throw new Error("El stock no puede ser negativo.");
+      this.#stock = s;
+    }
+
+    // TODO 5: getDescripcion()
+    // Formato: "Ratón Gaming (45.00 €) — Stock: 10 [Periféricos]"
+    // Usa toFixed(2) para el precio.
+
+    getDescripcion() {
+      return `${this.#nombre} (${this.#precio.toFixed(2)} €) — Stock: ${this.#stock} [${this.#categoria}]`;
+    }
+    // TODO 6: restarStock(cantidad)
+    // Si this.#stock >= cantidad → resta y return true
+    // Si no alcanza              → return false (sin cambios)
+    restarStock(cantidad) {
+      if (this.#stock < cantidad) return false;
+      this.#stock -= cantidad;
+      return true;
+    }
+
+    // TODO 7: agregarStock(cantidad)
+    // Suma cantidad a this.#stock
+    agregarStock(cantidad) {
+      this.#stock += Number(cantidad);
+    }
+  }
+
+  // ===================================================
+  // Pruebas automáticas — NO modificar
+  // ===================================================
+  const salida = document.getElementById("salida");
+  try {
+    const p = new Producto("Ratón Gaming", 45, 10, "Periféricos");
+    const lineas = [
+      p.getDescripcion(),
+      "Venta de 3 unidades: " + p.restarStock(3),
+      "Stock restante: " + p.getStock(),
+      "Venta de 10 unidades (sin stock): " + p.restarStock(10),
+      "Stock después del intento: " + p.getStock()
+    ];
+    p.agregarStock(5);
+    lineas.push("Reponer 5 unidades. Stock final: " + p.getStock());
+
+    const texto  = lineas.join("\n");
+    const esperado = document.getElementById("esperado").textContent.trim();
+    const ok = texto === esperado;
+    salida.innerHTML = `<div class="${ok ? "ok" : "fail"}"><strong>${ok ? "✅ ¡Correcto!" : "❌ Revisa tu código"}</strong><pre>${texto}</pre></div>`;
+  } catch(e) {
+    salida.innerHTML = `<div class="fail"><strong>❌ Error:</strong> ${e.message}</div>`;
+  }
+</script>
+</body>
+</html>

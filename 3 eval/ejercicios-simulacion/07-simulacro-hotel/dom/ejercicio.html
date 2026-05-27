@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulacro 07 — Gestor de reservas de hotel</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 30px; background: #f4f6f8; color: #222; }
+    .contenedor { max-width: 1200px; margin: 0 auto; }
+    h1, h2, h3 { margin-top: 0; }
+    .grid-principal { display: grid; grid-template-columns: 360px 1fr; gap: 20px; align-items: start; }
+    .panel { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 14px rgba(0,0,0,0.08); margin-bottom: 20px; }
+    form { display: grid; gap: 12px; }
+    label { display: grid; gap: 6px; font-weight: bold; }
+    input, select, textarea, button { padding: 10px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14px; font-family: inherit; }
+    textarea { resize: vertical; min-height: 60px; }
+    button { border: none; background: #2563eb; color: white; font-weight: bold; cursor: pointer; }
+    button:hover { background: #1d4ed8; }
+    .btn-secundario { background: #475569; }
+    .btn-secundario:hover { background: #334155; }
+    .btn-confirmar { background: #0f766e; }
+    .btn-confirmar:hover { background: #0d5f59; }
+    .btn-cancelar, .btn-eliminar { background: #dc2626; }
+    .btn-cancelar:hover, .btn-eliminar:hover { background: #b91c1c; }
+    .btn-editar { background: #9333ea; }
+    .btn-editar:hover { background: #7e22ce; }
+    .resumen { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .dato-resumen { background: #f8fafc; border: 1px solid #dbe4ee; border-radius: 10px; padding: 12px; }
+    .dato-resumen strong { display: block; font-size: 22px; margin-bottom: 4px; }
+    .zona-reservas { display: grid; gap: 14px; }
+    .reserva { border: 2px solid #d1d5db; border-radius: 14px; padding: 16px; background: white; cursor: pointer; transition: 0.2s; }
+    .reserva:hover { border-color: #2563eb; }
+    .reserva.seleccionada { border-color: #2563eb; box-shadow: 0 0 0 4px rgba(37,99,235,0.15); }
+    .reserva-confirmada { background: #eff6ff; border-color: #3b82f6; }
+    .reserva-checkin    { background: #ecfdf5; border-color: #22c55e; }
+    .reserva-cancelada  { background: #fef2f2; border-color: #ef4444; opacity: 0.8; }
+    .cabecera-reserva { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+    .cabecera-reserva h3 { margin-bottom: 4px; }
+    .etiquetas { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+    .etiqueta { display: inline-block; padding: 5px 9px; border-radius: 999px; font-size: 12px; font-weight: bold; }
+    .estado-pendiente  { background: #e0f2fe; color: #075985; }
+    .estado-confirmada { background: #dbeafe; color: #1e40af; }
+    .estado-checkin    { background: #dcfce7; color: #166534; }
+    .estado-cancelada  { background: #fee2e2; color: #991b1b; }
+    .tipo-individual { background: #e5e7eb; color: #374151; }
+    .tipo-doble      { background: #ede9fe; color: #4c1d95; }
+    .tipo-suite      { background: #fef3c7; color: #92400e; }
+    .acciones { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    .acciones button { padding: 8px 10px; font-size: 13px; }
+    .linea-info { margin: 6px 0; }
+    .muted { color: #64748b; font-style: italic; }
+    .fila-botones { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <div class="contenedor">
+    <h1>Simulacro 07 — Gestor de reservas de hotel</h1>
+    <p style="color:#64748b">⏱ Tiempo estimado para esta parte: <strong>70 minutos</strong></p>
+
+    <div class="grid-principal">
+      <div>
+        <section class="panel">
+          <h2>Nueva reserva</h2>
+          <form id="formReserva" autocomplete="off">
+            <label>Nombre del huésped
+              <input id="inpHuesped" type="text" placeholder="Ej: María López" required>
+            </label>
+            <label>Tipo de habitación
+              <select id="selTipo" required>
+                <option value="individual" data-precio="89">Individual — 89 €/noche</option>
+                <option value="doble"      data-precio="129" selected>Doble — 129 €/noche</option>
+                <option value="suite"      data-precio="249">Suite — 249 €/noche</option>
+              </select>
+            </label>
+            <label>Número de noches (1–30)
+              <input id="inpNoches" type="number" min="1" max="30" value="1" required>
+            </label>
+            <label>Observaciones
+              <textarea id="txtObservaciones" placeholder="Ej: cama extra, llegada tardía..."></textarea>
+            </label>
+            <button type="submit">Añadir reserva</button>
+          </form>
+        </section>
+
+        <section class="panel">
+          <h2>Resumen</h2>
+          <div class="resumen">
+            <div class="dato-resumen"><strong id="totalReservas">0</strong>Total reservas</div>
+            <div class="dato-resumen"><strong id="totalActivas">0</strong>Activas</div>
+            <div class="dato-resumen"><strong id="totalCanceladas">0</strong>Canceladas</div>
+            <div class="dato-resumen"><strong id="ingresosEstimados">0.00 €</strong>Ingresos estimados</div>
+          </div>
+          <div class="fila-botones">
+            <button id="btnLimpiarCanceladas" type="button" class="btn-secundario">Eliminar canceladas</button>
+          </div>
+        </section>
+      </div>
+
+      <div>
+        <section class="panel">
+          <h2>Reservas</h2>
+          <p class="muted" id="mensajeVacio">No hay reservas registradas todavía.</p>
+          <div id="listaReservas" class="zona-reservas"></div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =====================================================
+    // Clase Reserva
+    // =====================================================
+    class Reserva {
+      #id;
+      #huesped;
+      #tipoHabitacion;
+      #precioNoche;
+      #noches;
+      #estado;
+      #observaciones;
+
+      constructor(id, huesped, tipoHabitacion, precioNoche, noches, observaciones) {
+        this.#id = id;
+        this.setHuesped(huesped);
+        this.setTipoHabitacion(tipoHabitacion);
+        this.setPrecioNoche(precioNoche);
+        this.setNoches(noches);
+        this.setObservaciones(observaciones);
+        this.#estado = "pendiente";
+      }
+
+      getId()             { return this.#id; }
+      getHuesped()        { return this.#huesped; }
+      getTipoHabitacion() { return this.#tipoHabitacion; }
+      getPrecioNoche()    { return this.#precioNoche; }
+      getNoches()         { return this.#noches; }
+      getEstado()         { return this.#estado; }
+      getObservaciones()  { return this.#observaciones; }
+
+      setHuesped(h)          { this.#huesped = String(h).trim(); }
+      setTipoHabitacion(t)   { this.#tipoHabitacion = t; }
+      setPrecioNoche(p)      { this.#precioNoche = Number(p); }
+      setNoches(n)           { this.#noches = Number(n); }
+      setEstado(e)           { this.#estado = e; }
+      setObservaciones(obs) {
+        const t = String(obs).trim();
+        this.#observaciones = t === "" ? "Sin observaciones" : t;
+      }
+
+      getImporteTotal() {
+        return this.#precioNoche * this.#noches;
+      }
+    }
+
+    // =====================================================
+    // Referencias al DOM
+    // =====================================================
+    const formReserva       = document.getElementById("formReserva");
+    const inpHuesped        = document.getElementById("inpHuesped");
+    const selTipo           = document.getElementById("selTipo");
+    const inpNoches         = document.getElementById("inpNoches");
+    const txtObservaciones  = document.getElementById("txtObservaciones");
+    const listaReservas     = document.getElementById("listaReservas");
+    const mensajeVacio      = document.getElementById("mensajeVacio");
+    const totalReservas     = document.getElementById("totalReservas");
+    const totalActivas      = document.getElementById("totalActivas");
+    const totalCanceladas   = document.getElementById("totalCanceladas");
+    const ingresosEstimados = document.getElementById("ingresosEstimados");
+    const btnLimpiarCanceladas = document.getElementById("btnLimpiarCanceladas");
+
+    let siguienteId = 1;
+
+    // =====================================================
+    // Funciones auxiliares
+    // =====================================================
+    function formatearEuros(n) {
+      return Number(n).toFixed(2) + " €";
+    }
+
+    // TODO 1:
+    // Implementa obtenerPrecioSeleccionado().
+    // Obtén la opción seleccionada en selTipo,
+    // lee su atributo data-precio y devuélvelo como número.
+    function obtenerPrecioSeleccionado() {
+
+    }
+
+    function nombreEstado(e) {
+      return { pendiente: "Pendiente", confirmada: "Confirmada", checkin: "Check-in", cancelada: "Cancelada" }[e] || e;
+    }
+
+    function siguienteEstado(e) {
+      return { pendiente: "confirmada", confirmada: "checkin", checkin: "pendiente" }[e] || "pendiente";
+    }
+
+    function nombreTipo(t) {
+      return { individual: "Individual", doble: "Doble", suite: "Suite" }[t] || t;
+    }
+
+    // =====================================================
+    // Creación dinámica de tarjetas
+    // =====================================================
+    function crearTarjetaReserva(reserva) {
+      // TODO 2:
+      // Crea el article principal con createElement("article").
+      // Añádele la clase "reserva".
+      // Guarda en data-*: id, huesped, tipo, precio, noches, estado, observaciones.
+
+      // TODO 3:
+      // Crea la cabecera (div.cabecera-reserva) con:
+      // - h3 con el nombre del huésped y el nº de reserva
+      // - p con el tipo de habitación, precio/noche y noches
+
+      // TODO 4:
+      // Crea el div.etiquetas con:
+      // - span.etiqueta de estado (clase: estado-pendiente, estado-confirmada, etc.)
+      // - span.etiqueta del tipo de habitación (clase: tipo-individual, tipo-doble, tipo-suite)
+      // - span.etiqueta con el importe total formateado
+
+      // TODO 5:
+      // Crea un párrafo.linea-info.muted con las observaciones.
+
+      // TODO 6:
+      // Crea el div.acciones con cuatro botones:
+      // - data-accion="cambiar-estado"  class="btn-confirmar" → "▶ Avanzar estado"
+      // - data-accion="editar"          class="btn-editar"    → "✏ Editar obs."
+      // - data-accion="cancelar"        class="btn-cancelar"  → "✕ Cancelar"
+      // - data-accion="eliminar"        class="btn-eliminar"  → "🗑 Eliminar"
+      // Aplica la clase visual de estado al article.
+      // Devuelve el article.
+    }
+
+    // =====================================================
+    // Actualización visual
+    // =====================================================
+    // TODO 7:
+    // aplicarClaseEstado(tarjeta):
+    // Elimina reserva-confirmada, reserva-checkin, reserva-cancelada.
+    // Lee data-estado y añade la clase correspondiente:
+    //   "confirmada" → reserva-confirmada
+    //   "checkin"    → reserva-checkin
+    //   "cancelada"  → reserva-cancelada
+    function aplicarClaseEstado(tarjeta) {
+
+    }
+
+    // TODO 8:
+    // actualizarTarjetaTrasCambio(tarjeta):
+    // Lee data-estado y data-observaciones.
+    // Actualiza el span de estado (texto + clase: estado-X).
+    // Actualiza el párrafo de observaciones.
+    // Llama a aplicarClaseEstado(tarjeta).
+    function actualizarTarjetaTrasCambio(tarjeta) {
+
+    }
+
+    // =====================================================
+    // Resumen
+    // =====================================================
+    // TODO 9:
+    // actualizarResumen():
+    // Cuenta total, activas (no canceladas), canceladas.
+    // Suma ingresos: precioNoche * noches de las NO canceladas.
+    // Muestra/oculta mensajeVacio.
+    function actualizarResumen() {
+
+    }
+
+    // TODO 10:
+    // seleccionarReserva(tarjeta):
+    // Elimina "seleccionada" de todas las tarjetas.
+    // Añade "seleccionada" a la recibida.
+    function seleccionarReserva(tarjeta) {
+
+    }
+
+    // =====================================================
+    // Acciones
+    // =====================================================
+    // TODO 11:
+    // cambiarEstadoReserva(tarjeta):
+    // Si data-estado es "cancelada" → no hacer nada.
+    // Si no: calcular siguiente estado con siguienteEstado(),
+    // guardar en data-estado, llamar a actualizarTarjetaTrasCambio y actualizarResumen.
+    function cambiarEstadoReserva(tarjeta) {
+
+    }
+
+    // TODO 12:
+    // editarObservaciones(tarjeta):
+    // Muestra prompt con las observaciones actuales.
+    // Si el usuario cancela → no cambiar nada.
+    // Si acepta → guardar texto (o "Sin observaciones" si vacío),
+    // actualizar data-observaciones, llamar a actualizarTarjetaTrasCambio.
+    function editarObservaciones(tarjeta) {
+
+    }
+
+    // TODO 13:
+    // cancelarReserva(tarjeta):
+    // data-estado = "cancelada".
+    // Llamar a actualizarTarjetaTrasCambio y actualizarResumen.
+    function cancelarReserva(tarjeta) {
+
+    }
+
+    // TODO 14:
+    // eliminarReserva(tarjeta):
+    // removeChild sobre el padre, luego actualizarResumen.
+    function eliminarReserva(tarjeta) {
+
+    }
+
+    // =====================================================
+    // Formulario
+    // =====================================================
+    formReserva.addEventListener("submit", function(event) {
+      event.preventDefault();
+
+      // TODO 15: Recoge los datos del formulario:
+      // huesped, tipoHabitacion, precioNoche (obtenerPrecioSeleccionado),
+      // noches, observaciones.
+
+      // TODO 16: Crea un nuevo objeto Reserva con siguienteId y los datos.
+
+      // TODO 17: Crea la tarjeta HTML e insértala en listaReservas.
+
+      // TODO 18:
+      // - Incrementa siguienteId
+      // - formReserva.reset()
+      // - inpNoches.value = 1
+      // - inpHuesped.focus()
+      // - actualizarResumen()
+    });
+
+    // =====================================================
+    // Delegación de eventos
+    // =====================================================
+    // TODO 19:
+    // Implementa la delegación en listaReservas:
+    // 1. closest(".reserva") → tarjeta
+    // 2. Si no hay tarjeta → return
+    // 3. Si hay data-accion → stopPropagation + ejecutar acción + return
+    //    Acciones: cambiar-estado, editar, cancelar, eliminar
+    // 4. Si no hay data-accion → seleccionarReserva(tarjeta)
+    listaReservas.addEventListener("click", function(event) {
+
+    });
+
+    // =====================================================
+    // Limpiar canceladas
+    // =====================================================
+    // TODO 20:
+    // Localiza todos los .reserva con data-estado="cancelada".
+    // Elimínalos del contenedor.
+    // Actualiza el resumen.
+    btnLimpiarCanceladas.addEventListener("click", function() {
+
+    });
+
+    actualizarResumen();
+  </script>
+</body>
+</html>

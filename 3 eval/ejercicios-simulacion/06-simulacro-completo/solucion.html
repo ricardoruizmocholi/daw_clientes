@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solución — Gestor de socios del gimnasio</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 30px; background: #f4f6f8; color: #222; }
+    .contenedor { max-width: 1200px; margin: 0 auto; }
+    h1, h2, h3 { margin-top: 0; }
+    .aviso { background: #fffbeb; border: 2px solid #f59e0b; border-radius: 8px; padding: 10px 16px; margin-bottom: 20px; font-size: 13px; }
+    .grid-principal { display: grid; grid-template-columns: 360px 1fr; gap: 20px; align-items: start; }
+    .panel { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 14px rgba(0,0,0,0.08); margin-bottom: 20px; }
+    form { display: grid; gap: 12px; }
+    label { display: grid; gap: 6px; font-weight: bold; }
+    input, select, textarea, button { padding: 10px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14px; font-family: inherit; }
+    textarea { resize: vertical; min-height: 60px; }
+    button { border: none; background: #2563eb; color: white; font-weight: bold; cursor: pointer; }
+    button:hover { background: #1d4ed8; }
+    .btn-secundario { background: #475569; }
+    .btn-secundario:hover { background: #334155; }
+    .btn-activar { background: #0f766e; }
+    .btn-activar:hover { background: #0d5f59; }
+    .btn-baja, .btn-eliminar { background: #dc2626; }
+    .btn-baja:hover, .btn-eliminar:hover { background: #b91c1c; }
+    .btn-editar { background: #9333ea; }
+    .btn-editar:hover { background: #7e22ce; }
+    .resumen { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .dato-resumen { background: #f8fafc; border: 1px solid #dbe4ee; border-radius: 10px; padding: 12px; }
+    .dato-resumen strong { display: block; font-size: 22px; margin-bottom: 4px; }
+    .zona-socios { display: grid; gap: 14px; }
+    .socio { border: 2px solid #d1d5db; border-radius: 14px; padding: 16px; background: white; cursor: pointer; transition: 0.2s; }
+    .socio:hover { border-color: #2563eb; }
+    .socio.seleccionado { border-color: #2563eb; box-shadow: 0 0 0 4px rgba(37,99,235,0.15); }
+    .socio-suspendido { background: #fff7ed; border-color: #fb923c; }
+    .socio-baja { background: #fef2f2; border-color: #ef4444; opacity: 0.8; }
+    .cabecera-socio { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+    .cabecera-socio h3 { margin-bottom: 4px; }
+    .etiquetas { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+    .etiqueta { display: inline-block; padding: 5px 9px; border-radius: 999px; font-size: 12px; font-weight: bold; background: #e5e7eb; color: #374151; }
+    .estado-activo     { background: #dcfce7; color: #166534; }
+    .estado-suspendido { background: #ffedd5; color: #9a3412; }
+    .estado-baja       { background: #fee2e2; color: #991b1b; }
+    .membresia-basica   { background: #dbeafe; color: #1e40af; }
+    .membresia-estandar { background: #ede9fe; color: #4c1d95; }
+    .membresia-premium  { background: #fef3c7; color: #92400e; }
+    .acciones { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    .acciones button { padding: 8px 10px; font-size: 13px; }
+    .linea-info { margin: 6px 0; }
+    .muted { color: #64748b; font-style: italic; }
+    .fila-botones { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <div class="contenedor">
+    <div class="aviso">⚠️ Intenta resolver el ejercicio antes de consultar esta solución.</div>
+    <h1>Gestor de socios del gimnasio — SOLUCIÓN COMPLETA</h1>
+
+    <div class="grid-principal">
+      <div>
+        <section class="panel">
+          <h2>Nuevo socio</h2>
+          <form id="formSocio" autocomplete="off">
+            <label>Nombre del socio
+              <input id="inpNombre" type="text" placeholder="Ej: Ana García" required>
+            </label>
+            <label>Tipo de membresía
+              <select id="selMembresia" required>
+                <option value="basica"   data-cuota="25">Básica — 25 €/mes</option>
+                <option value="estandar" data-cuota="45" selected>Estándar — 45 €/mes</option>
+                <option value="premium"  data-cuota="75">Premium — 75 €/mes</option>
+              </select>
+            </label>
+            <label>Observaciones
+              <textarea id="txtObservaciones" placeholder="Ej: lesión de rodilla..."></textarea>
+            </label>
+            <button type="submit">Añadir socio</button>
+          </form>
+        </section>
+        <section class="panel">
+          <h2>Resumen</h2>
+          <div class="resumen">
+            <div class="dato-resumen"><strong id="totalSocios">0</strong>Total socios</div>
+            <div class="dato-resumen"><strong id="totalActivos">0</strong>Activos</div>
+            <div class="dato-resumen"><strong id="totalSuspendidos">0</strong>Suspendidos / Baja</div>
+            <div class="dato-resumen"><strong id="cuotaTotal">0.00 €</strong>Cuota mensual activos</div>
+          </div>
+          <div class="fila-botones">
+            <button id="btnLimpiarBajas" type="button" class="btn-secundario">Eliminar dados de baja</button>
+          </div>
+        </section>
+      </div>
+      <div>
+        <section class="panel">
+          <h2>Socios</h2>
+          <p class="muted" id="mensajeVacio">Todavía no hay socios registrados.</p>
+          <div id="listaSocios" class="zona-socios"></div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===================================================
+    // SOLUCIÓN COMPLETA — Clase Socio
+    // ===================================================
+    class Socio {
+      #id;
+      #nombre;
+      #tipoMembresia;
+      #cuotaMensual;
+      #estado;
+      #observaciones;
+
+      constructor(id, nombre, tipoMembresia, cuotaMensual, observaciones) {
+        this.#id = id;
+        this.setNombre(nombre);
+        this.setTipoMembresia(tipoMembresia);
+        this.setCuotaMensual(cuotaMensual);
+        this.setObservaciones(observaciones);
+        this.#estado = "activo";
+      }
+
+      getId()            { return this.#id; }
+      getNombre()        { return this.#nombre; }
+      getTipoMembresia() { return this.#tipoMembresia; }
+      getCuotaMensual()  { return this.#cuotaMensual; }
+      getEstado()        { return this.#estado; }
+      getObservaciones() { return this.#observaciones; }
+
+      setNombre(nombre)        { this.#nombre = String(nombre).trim(); }
+      setTipoMembresia(tipo)   { this.#tipoMembresia = tipo; }
+      setCuotaMensual(cuota)   { this.#cuotaMensual = Number(cuota); }
+      setEstado(estado)        { this.#estado = estado; }
+      setObservaciones(obs) {
+        const t = String(obs).trim();
+        this.#observaciones = t === "" ? "Sin observaciones" : t;
+      }
+    }
+
+    // --- Referencias al DOM ---
+    const formSocio        = document.getElementById("formSocio");
+    const inpNombre        = document.getElementById("inpNombre");
+    const selMembresia     = document.getElementById("selMembresia");
+    const txtObservaciones = document.getElementById("txtObservaciones");
+    const listaSocios      = document.getElementById("listaSocios");
+    const mensajeVacio     = document.getElementById("mensajeVacio");
+    const totalSocios      = document.getElementById("totalSocios");
+    const totalActivos     = document.getElementById("totalActivos");
+    const totalSuspendidos = document.getElementById("totalSuspendidos");
+    const cuotaTotal       = document.getElementById("cuotaTotal");
+    const btnLimpiarBajas  = document.getElementById("btnLimpiarBajas");
+
+    let siguienteId = 1;
+
+    // --- Helpers ---
+    function formatearEuros(n) { return Number(n).toFixed(2) + " €"; }
+
+    // TODO 1 resuelto: leer data-cuota de la opción seleccionada
+    function obtenerCuotaSeleccionada() {
+      const opcion = selMembresia.options[selMembresia.selectedIndex];
+      return Number(opcion.dataset.cuota);
+    }
+
+    function nombreEstado(e) {
+      return { activo: "Activo", suspendido: "Suspendido", baja: "Baja" }[e] || e;
+    }
+    function siguienteEstado(e) {
+      return e === "activo" ? "suspendido" : "activo";
+    }
+    function nombreMembresia(t) {
+      return { basica: "Básica", estandar: "Estándar", premium: "Premium" }[t] || t;
+    }
+
+    // --- TODO 2-6: crearTarjetaSocio ---
+    function crearTarjetaSocio(socio) {
+      // TODO 2: article principal con data-*
+      const article = document.createElement("article");
+      article.classList.add("socio");
+      article.dataset.id           = socio.getId();
+      article.dataset.nombre       = socio.getNombre();
+      article.dataset.membresia    = socio.getTipoMembresia();
+      article.dataset.cuota        = socio.getCuotaMensual();
+      article.dataset.estado       = socio.getEstado();
+      article.dataset.observaciones= socio.getObservaciones();
+
+      // TODO 3: cabecera
+      const cabecera = document.createElement("div");
+      cabecera.classList.add("cabecera-socio");
+
+      const infoDiv = document.createElement("div");
+      const titulo  = document.createElement("h3");
+      titulo.textContent = socio.getNombre();
+      const infoCuota = document.createElement("p");
+      infoCuota.classList.add("linea-info");
+      infoCuota.textContent = nombreMembresia(socio.getTipoMembresia()) + " — " + formatearEuros(socio.getCuotaMensual()) + "/mes";
+      infoDiv.appendChild(titulo);
+      infoDiv.appendChild(infoCuota);
+      cabecera.appendChild(infoDiv);
+
+      // TODO 4: etiquetas de estado y membresía
+      const etiquetas = document.createElement("div");
+      etiquetas.classList.add("etiquetas");
+
+      const spanEstado = document.createElement("span");
+      spanEstado.classList.add("etiqueta", "estado-" + socio.getEstado());
+      spanEstado.textContent = nombreEstado(socio.getEstado());
+
+      const spanMem = document.createElement("span");
+      spanMem.classList.add("etiqueta", "membresia-" + socio.getTipoMembresia());
+      spanMem.textContent = nombreMembresia(socio.getTipoMembresia());
+
+      etiquetas.appendChild(spanEstado);
+      etiquetas.appendChild(spanMem);
+
+      // TODO 5: observaciones
+      const pObs = document.createElement("p");
+      pObs.classList.add("linea-info", "muted");
+      pObs.textContent = socio.getObservaciones();
+
+      // TODO 6: botones de acción
+      const acciones = document.createElement("div");
+      acciones.classList.add("acciones");
+
+      const btnCambiar  = crearBoton("Suspender / Activar", "cambiar-estado", "btn-activar");
+      const btnEditar   = crearBoton("✏ Editar obs.",       "editar",          "btn-editar");
+      const btnBaja     = crearBoton("✕ Dar de baja",       "dar-baja",        "btn-baja");
+      const btnEliminar = crearBoton("🗑 Eliminar",          "eliminar",        "btn-eliminar");
+
+      acciones.appendChild(btnCambiar);
+      acciones.appendChild(btnEditar);
+      acciones.appendChild(btnBaja);
+      acciones.appendChild(btnEliminar);
+
+      // Montar el article
+      article.appendChild(cabecera);
+      article.appendChild(etiquetas);
+      article.appendChild(pObs);
+      article.appendChild(acciones);
+
+      // Aplicar clase visual de estado
+      aplicarClaseEstado(article);
+
+      return article;
+    }
+
+    function crearBoton(texto, accion, clase) {
+      const btn = document.createElement("button");
+      btn.textContent     = texto;
+      btn.dataset.accion  = accion;
+      btn.classList.add(clase);
+      return btn;
+    }
+
+    // --- TODO 7: aplicarClaseEstado ---
+    function aplicarClaseEstado(tarjeta) {
+      tarjeta.classList.remove("socio-suspendido", "socio-baja");
+      const estado = tarjeta.dataset.estado;
+      if (estado === "suspendido") tarjeta.classList.add("socio-suspendido");
+      if (estado === "baja")       tarjeta.classList.add("socio-baja");
+    }
+
+    // --- TODO 8: actualizarTarjetaTrasCambio ---
+    function actualizarTarjetaTrasCambio(tarjeta) {
+      const estado = tarjeta.dataset.estado;
+      const obs    = tarjeta.dataset.observaciones;
+
+      // Actualizar badge de estado
+      const spanEstado = tarjeta.querySelector(".etiqueta.estado-activo, .etiqueta.estado-suspendido, .etiqueta.estado-baja");
+      if (spanEstado) {
+        spanEstado.className = "etiqueta estado-" + estado;
+        spanEstado.textContent = nombreEstado(estado);
+      }
+
+      // Actualizar observaciones
+      const pObs = tarjeta.querySelector(".muted");
+      if (pObs) pObs.textContent = obs;
+
+      aplicarClaseEstado(tarjeta);
+    }
+
+    // --- TODO 9: actualizarResumen ---
+    function actualizarResumen() {
+      const tarjetas = listaSocios.querySelectorAll(".socio");
+      let activos = 0, noActivos = 0, cuota = 0;
+
+      tarjetas.forEach(function(t) {
+        const estado = t.dataset.estado;
+        if (estado === "activo") {
+          activos++;
+          cuota += Number(t.dataset.cuota);
+        } else {
+          noActivos++;
+        }
+      });
+
+      totalSocios.textContent     = tarjetas.length;
+      totalActivos.textContent    = activos;
+      totalSuspendidos.textContent= noActivos;
+      cuotaTotal.textContent      = formatearEuros(cuota);
+      mensajeVacio.style.display  = tarjetas.length === 0 ? "block" : "none";
+    }
+
+    // --- TODO 10: seleccionarSocio ---
+    function seleccionarSocio(tarjeta) {
+      listaSocios.querySelectorAll(".socio").forEach(s => s.classList.remove("seleccionado"));
+      tarjeta.classList.add("seleccionado");
+    }
+
+    // --- TODO 11: cambiarEstadoSocio ---
+    function cambiarEstadoSocio(tarjeta) {
+      if (tarjeta.dataset.estado === "baja") return; // estado terminal
+      const nuevoEstado = siguienteEstado(tarjeta.dataset.estado);
+      tarjeta.dataset.estado = nuevoEstado;
+      actualizarTarjetaTrasCambio(tarjeta);
+      actualizarResumen();
+    }
+
+    // --- TODO 12: editarObservacionesSocio ---
+    function editarObservacionesSocio(tarjeta) {
+      const actual  = tarjeta.dataset.observaciones;
+      const nuevo   = prompt("Editar observaciones:", actual);
+      if (nuevo === null) return; // canceló
+      const texto = nuevo.trim() === "" ? "Sin observaciones" : nuevo.trim();
+      tarjeta.dataset.observaciones = texto;
+      actualizarTarjetaTrasCambio(tarjeta);
+    }
+
+    // --- TODO 13: darBajaSocio ---
+    function darBajaSocio(tarjeta) {
+      tarjeta.dataset.estado = "baja";
+      actualizarTarjetaTrasCambio(tarjeta);
+      actualizarResumen();
+    }
+
+    // --- TODO 14: eliminarSocio ---
+    function eliminarSocio(tarjeta) {
+      listaSocios.removeChild(tarjeta);
+      actualizarResumen();
+    }
+
+    // --- TODO 15-18: Formulario submit ---
+    formSocio.addEventListener("submit", function(event) {
+      event.preventDefault();
+
+      // TODO 15: recoger datos
+      const nombre       = inpNombre.value;
+      const tipoMembresia= selMembresia.value;
+      const cuota        = obtenerCuotaSeleccionada();
+      const observaciones= txtObservaciones.value;
+
+      // TODO 16: crear instancia
+      const socio = new Socio(siguienteId, nombre, tipoMembresia, cuota, observaciones);
+
+      // TODO 17: crear tarjeta e insertar
+      const tarjeta = crearTarjetaSocio(socio);
+      listaSocios.appendChild(tarjeta);
+
+      // TODO 18: limpiar y actualizar
+      siguienteId++;
+      formSocio.reset();
+      inpNombre.focus();
+      actualizarResumen();
+    });
+
+    // --- TODO 19: Delegación de eventos ---
+    listaSocios.addEventListener("click", function(event) {
+      // Paso 1-2: localizar tarjeta
+      const tarjeta = event.target.closest(".socio");
+      if (!tarjeta) return;
+
+      // Paso 3: si pulsaron un botón de acción
+      const accion = event.target.dataset.accion;
+      if (accion) {
+        event.stopPropagation();
+        if (accion === "cambiar-estado") cambiarEstadoSocio(tarjeta);
+        if (accion === "editar")         editarObservacionesSocio(tarjeta);
+        if (accion === "dar-baja")       darBajaSocio(tarjeta);
+        if (accion === "eliminar")       eliminarSocio(tarjeta);
+        return;
+      }
+
+      // Paso 4: click en la tarjeta (sin botón) → seleccionar
+      seleccionarSocio(tarjeta);
+    });
+
+    // --- TODO 20: Limpiar dados de baja ---
+    btnLimpiarBajas.addEventListener("click", function() {
+      const enBaja = listaSocios.querySelectorAll(".socio[data-estado='baja']");
+      enBaja.forEach(s => listaSocios.removeChild(s));
+      actualizarResumen();
+    });
+
+    // Estado inicial
+    actualizarResumen();
+  </script>
+</body>
+</html>

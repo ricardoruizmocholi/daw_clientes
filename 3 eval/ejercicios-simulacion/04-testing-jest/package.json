@@ -1,0 +1,11 @@
+{
+  "name": "ejercicio-04-testing",
+  "version": "1.0.0",
+  "description": "Ejercicio de testing con Jest — 3ª Evaluación DAW",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0"
+  }
+}

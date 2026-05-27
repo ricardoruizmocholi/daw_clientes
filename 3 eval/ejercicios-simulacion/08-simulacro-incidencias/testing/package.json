@@ -1,0 +1,11 @@
+{
+  "name": "simulacro-08-testing",
+  "version": "1.0.0",
+  "description": "Tests Jest para el simulacro 08 — Gestor de incidencias de soporte",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0"
+  }
+}

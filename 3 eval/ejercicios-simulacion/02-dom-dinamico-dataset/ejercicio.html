@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Ejercicio 02 — DOM dinámico y data-*</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 30px; background: #f4f6f8; color: #222; }
+    .panel { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 4px 14px rgba(0,0,0,0.08); max-width: 750px; margin: 0 auto; }
+    h1 { margin-top: 0; font-size: 1.4rem; }
+    .nivel { background: #dcfce7; color: #166534; padding: 3px 12px; border-radius: 999px; font-size: 12px; font-weight: bold; }
+    code { background: #e2e8f0; padding: 2px 6px; border-radius: 4px; }
+    .zona { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; margin-top: 20px; }
+    /* Clases que debes aplicar con classList */
+    .empleado { border: 2px solid #cbd5e1; border-radius: 12px; padding: 16px; background: white; }
+    .empleado h3 { margin: 0 0 6px; font-size: 1rem; }
+    .empleado p  { margin: 4px 0; font-size: 13px; color: #475569; }
+    .empleado .salario { font-weight: bold; color: #1e293b; }
+    .activo   { border-color: #22c55e; background: #f0fdf4; }
+    .inactivo { border-color: #ef4444; background: #fef2f2; opacity: 0.75; }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: bold; margin-top: 8px; }
+    .badge-activo   { background: #dcfce7; color: #166534; }
+    .badge-inactivo { background: #fee2e2; color: #991b1b; }
+  </style>
+</head>
+<body>
+<div class="panel">
+  <h1>Ejercicio 02 — DOM dinámico y data-* <span class="nivel">⭐ Fácil</span></h1>
+  <p>Dado el array de empleados de abajo, crea dinámicamente las tarjetas en el contenedor <code>#listaEmpleados</code>.</p>
+
+  <h2>Tareas</h2>
+  <ol>
+    <li>Recorre el array con <code>forEach</code></li>
+    <li>Por cada empleado, crea un <code>article</code> con <code>createElement</code></li>
+    <li>Guarda en <strong>atributos data-*</strong>: <code>data-id</code>, <code>data-nombre</code>, <code>data-departamento</code>, <code>data-salario</code>, <code>data-activo</code></li>
+    <li>Aplica la clase <code>empleado</code> + <code>activo</code> o <code>inactivo</code> según <code>emp.activo</code></li>
+    <li>Crea dentro un <code>h3</code> con el nombre, un <code>p</code> con el departamento, un <code>p</code> con el salario (formateado con <code>toFixed(2)</code>) y un <code>span.badge</code> con el estado</li>
+    <li>Usa <code>appendChild</code> para insertar cada tarjeta en <code>#listaEmpleados</code></li>
+  </ol>
+
+  <div id="listaEmpleados" class="zona"></div>
+</div>
+
+<script>
+  const empleados = [
+    { id: 1, nombre: "Ana García",    departamento: "Desarrollo",  salario: 2800, activo: true  },
+    { id: 2, nombre: "Luis Martínez", departamento: "Marketing",   salario: 2200, activo: true  },
+    { id: 3, nombre: "Marta López",   departamento: "Diseño",      salario: 2500, activo: false },
+    { id: 4, nombre: "Carlos Ruiz",   departamento: "Soporte",     salario: 1900, activo: true  },
+    { id: 5, nombre: "Elena Torres",  departamento: "Ventas",      salario: 2100, activo: false }
+  ];
+
+  const listaEmpleados = document.getElementById("listaEmpleados");
+
+  // TODO 1: Recorre el array empleados con forEach
+  empleados.forEach(function(emp) {
+
+    // TODO 2: Crea el article principal
+    // const tarjeta = document.createElement("article");
+    const tarjeta =  document.createElement("article");
+
+    // TODO 3: Añade la clase "empleado" y la clase "activo" o "inactivo"
+    // tarjeta.classList.add("empleado");
+    tarjeta.classList.add("empleado");
+    // tarjeta.classList.add(emp.activo ? "activo" : "inactivo");
+    tarjeta.classList.add(emp.activo ? "activo" : "inactivo");
+    // TODO 4: Guarda los datos en atributos data-*
+    tarjeta.dataset.id = emp.id;
+  
+    // tarjeta.dataset.id          = emp.id;
+    tarjeta.dataset.nombre = emp.nombre;
+    // tarjeta.dataset.nombre      = emp.nombre;
+  tarjeta.dataset.departamento = emp.departamento;
+    // tarjeta.dataset.departamento= emp.departamento;
+    tarjeta.dataset.salario = emp.salario;
+    // tarjeta.dataset.salario     = emp.salario;
+    tarjeta.dataset.activo = emp.activo;
+    // tarjeta.dataset.activo      = emp.activo;
+
+    // TODO 5: Crea el h3 con el nombre
+    const titulo = document.createElement("h3");
+    // const titulo = document.createElement("h3");
+    titulo.textContent = emp.nombre;
+    // titulo.textContent = emp.nombre;
+
+    // TODO 6: Crea el p con el departamento
+
+     const dpto = document.createElement("p");
+     dpto.textContent = emp.departamento;
+
+    // TODO 7: Crea el p con el salario formateado
+     const salario = document.createElement("p");
+     salario.classList.add("salario");
+     salario.textContent = Number(emp.salario).toFixed(2) + " €/mes";
+
+    // TODO 8: Crea el badge de estado
+     const badge = document.createElement("span");
+     badge.classList.add("badge");
+     badge.classList.add(emp.activo ? "badge-activo" : "badge-inactivo");
+     badge.textContent = emp.activo ? "Activo" : "Inactivo";
+
+    // TODO 9: Inserta todos los hijos en la tarjeta con appendChild
+     tarjeta.appendChild(titulo);
+     tarjeta.appendChild(dpto);
+     tarjeta.appendChild(salario);
+     tarjeta.appendChild(badge);
+    // ...
+
+    // TODO 10: Inserta la tarjeta en el contenedor
+     listaEmpleados.appendChild(tarjeta);
+  });
+</script>
+</body>
+</html>

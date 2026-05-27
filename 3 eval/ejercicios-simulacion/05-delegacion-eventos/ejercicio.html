@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Ejercicio 05 — Delegación de eventos</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 30px; background: #f4f6f8; color: #222; margin: 0; }
+    .contenedor { max-width: 700px; margin: 0 auto; }
+    h1 { margin-top: 0; }
+    .nivel { background: #fee2e2; color: #991b1b; padding: 3px 12px; border-radius: 999px; font-size: 12px; font-weight: bold; }
+    .panel { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 14px rgba(0,0,0,0.08); margin-bottom: 16px; }
+    .zona { display: grid; gap: 12px; }
+    .producto { border: 2px solid #d1d5db; border-radius: 12px; padding: 16px; background: white; transition: 0.2s; }
+    .producto:hover { border-color: #2563eb; }
+    .producto.favorito { background: #fffbeb; border-color: #f59e0b; }
+    .producto.eliminado { opacity: 0; transition: opacity 0.3s; }
+    .cabecera { display: flex; justify-content: space-between; align-items: center; }
+    .producto h3 { margin: 0; }
+    .precio { font-size: 1.2rem; font-weight: bold; color: #2563eb; }
+    .controles { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+    .controles button { border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+    .btn-qty { width: 32px; height: 32px; background: #e2e8f0; font-size: 16px; }
+    .qty-val { font-size: 18px; font-weight: bold; min-width: 24px; text-align: center; }
+    .btn-fav { background: #fef3c7; color: #92400e; padding: 6px 12px; font-size: 12px; }
+    .btn-fav.activo { background: #f59e0b; color: white; }
+    .btn-del { background: #fee2e2; color: #991b1b; padding: 6px 12px; font-size: 12px; }
+    .total-bar { background: #1e293b; color: white; border-radius: 12px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; font-size: 1.1rem; }
+    .total-bar strong { font-size: 1.4rem; }
+    code { background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+    ol { line-height: 2; }
+  </style>
+</head>
+<body>
+<div class="contenedor">
+  <h1>Ejercicio 05 — Delegación de eventos <span class="nivel">⭐⭐⭐ Difícil</span></h1>
+
+  <div class="panel">
+    <h2>Objetivo</h2>
+    <p>Implementa la delegación de eventos usando <strong>un único listener</strong> en <code>#listaProductos</code>. Lee la acción de cada botón desde <code>data-accion</code> y usa <code>closest(".producto")</code> para localizar la tarjeta.</p>
+
+    <h2>Acciones a implementar</h2>
+    <ol>
+      <li><strong>plus</strong>: incrementa la cantidad (+1)</li>
+      <li><strong>minus</strong>: decrementa la cantidad (-1). Si llega a 0, elimina la tarjeta</li>
+      <li><strong>favorito</strong>: alterna la clase <code>favorito</code> en la tarjeta y la clase <code>activo</code> en el botón; actualiza <code>data-favorito</code></li>
+      <li><strong>eliminar</strong>: elimina la tarjeta del DOM</li>
+    </ol>
+    <p>Al final de cada acción llama a <code>actualizarTotal()</code> para recalcular el total visible.</p>
+  </div>
+
+  <div id="listaProductos" class="zona">
+    <article class="producto" data-id="1" data-nombre="Café" data-precio="1.30" data-cantidad="1" data-favorito="false">
+      <div class="cabecera">
+        <h3>Café</h3>
+        <span class="precio">1.30 €</span>
+      </div>
+      <div class="controles">
+        <button class="btn-qty" data-accion="minus">−</button>
+        <span class="qty-val">1</span>
+        <button class="btn-qty" data-accion="plus">+</button>
+        <button class="btn-fav" data-accion="favorito">☆ Favorito</button>
+        <button class="btn-del" data-accion="eliminar">✕</button>
+      </div>
+    </article>
+
+    <article class="producto" data-id="2" data-nombre="Tostada" data-precio="2.20" data-cantidad="2" data-favorito="false">
+      <div class="cabecera">
+        <h3>Tostada</h3>
+        <span class="precio">2.20 €</span>
+      </div>
+      <div class="controles">
+        <button class="btn-qty" data-accion="minus">−</button>
+        <span class="qty-val">2</span>
+        <button class="btn-qty" data-accion="plus">+</button>
+        <button class="btn-fav" data-accion="favorito">☆ Favorito</button>
+        <button class="btn-del" data-accion="eliminar">✕</button>
+      </div>
+    </article>
+
+    <article class="producto" data-id="3" data-nombre="Bocadillo" data-precio="4.50" data-cantidad="1" data-favorito="false">
+      <div class="cabecera">
+        <h3>Bocadillo</h3>
+        <span class="precio">4.50 €</span>
+      </div>
+      <div class="controles">
+        <button class="btn-qty" data-accion="minus">−</button>
+        <span class="qty-val">1</span>
+        <button class="btn-qty" data-accion="plus">+</button>
+        <button class="btn-fav" data-accion="favorito">☆ Favorito</button>
+        <button class="btn-del" data-accion="eliminar">✕</button>
+      </div>
+    </article>
+  </div>
+
+  <div class="total-bar">
+    <span>Total pedido</span>
+    <strong id="totalPedido">0.00 €</strong>
+  </div>
+</div>
+
+<script>
+  const listaProductos = document.getElementById("listaProductos");
+  const totalPedido    = document.getElementById("totalPedido");
+
+  // ===================================================
+  // TODO 1: Implementa actualizarTotal()
+  // Recorre todas las tarjetas .producto en listaProductos
+  // Lee data-precio y data-cantidad de cada una
+  // Suma precio * cantidad de cada tarjeta
+  // Muestra el resultado en totalPedido con 2 decimales y " €"
+  // ===================================================
+  function actualizarTotal() {
+    // Tu código aquí
+    const tarjetas = document.querySelectorAll(".producto");
+    let total=0;
+    tarjetas.forEach(function(tarjeta){
+      const precio = parseFloat(tarjeta.dataset.precio)
+      const cantidad = parseInt(tarjeta.dataset.cantidad, 10);
+      total += precio *cantidad;
+    
+    })
+    totalPedido.textContent = total.toFixed(2) +"€";
+  }
+
+  // ===================================================
+  // TODO 2: Implementa la delegación de eventos
+  // Un único listener en listaProductos para los 4 tipos de acción.
+  //
+  // Pasos:
+  // 1. event.target → botón pulsado
+  // 2. closest(".producto") → tarjeta del producto
+  // 3. Si no hay tarjeta, return
+  // 4. Leer data-accion del botón pulsado
+  // 5. Según la acción:
+  //
+  //    "plus":
+  //      - Leer data-cantidad y convertir a número
+  //      - Incrementar en 1
+  //      - Guardar nuevo valor en data-cantidad
+  //      - Actualizar el span.qty-val dentro de la tarjeta
+  //
+  //    "minus":
+  //      - Leer data-cantidad y convertir a número
+  //      - Decrementar en 1
+  //      - Si cantidad <= 0 → eliminar la tarjeta del DOM y salir
+  //      - Si cantidad > 0 → guardar nuevo valor y actualizar span.qty-val
+  //
+  //    "favorito":
+  //      - tarjeta.classList.toggle("favorito")
+  //      - event.target.classList.toggle("activo")
+  //      - Actualizar data-favorito en la tarjeta (true/false)
+  //      - Cambiar el texto del botón: "★ Favorito" / "☆ Favorito"
+  //
+  //    "eliminar":
+  //      - listaProductos.removeChild(tarjeta)
+  //
+  // 6. Llamar a actualizarTotal() al final de cada acción
+  // ===================================================
+  listaProductos.addEventListener("click", function(event) {
+    // Tu código aquí
+    const tarjeta =  event.target.closest(".producto");
+    if (!tarjeta) return ; 
+
+    const accion = event.target.dataset.accion;
+    if (!accion) return;
+
+    if (accion === "plus") {
+      let cantidad = parseInt(tarjeta.dataset.cantidad, 10);
+      cantidad++;
+      tarjeta.dataset.cantidad = cantidad;
+      tarjeta.querySelector(".qty-val").textContent = cantidad;
+    }
+
+    if (accion === "minus") {
+      let cantidad = parseInt(tarjeta.dataset.cantidad, 10);
+      cantidad--;
+      if (cantidad <= 0) {
+        // Si llega a 0, eliminar la tarjeta completa
+        listaProductos.removeChild(tarjeta);
+      } else {
+        tarjeta.dataset.cantidad = cantidad;
+        tarjeta.querySelector(".qty-val").textContent = cantidad;
+      }
+    }
+
+    if (accion === "favorito") {
+      // Toggle visual en la tarjeta y el botón
+      tarjeta.classList.toggle("favorito");
+      event.target.classList.toggle("activo");
+      // Actualizar el dato en data-* para que quede sincronizado
+      const esFavorito = tarjeta.classList.contains("favorito");
+      tarjeta.dataset.favorito = esFavorito;
+      event.target.textContent = esFavorito ? "★ Favorito" : "☆ Favorito";
+    }
+
+    if (accion === "eliminar") {
+      listaProductos.removeChild(tarjeta);
+    }
+    actualizarTotal();
+  });
+
+  // Estado inicial
+  actualizarTotal();
+</script>
+</body>
+</html>

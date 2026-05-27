@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulacro 08 — Gestor de incidencias de soporte</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 30px; background: #f4f6f8; color: #222; }
+    .contenedor { max-width: 1200px; margin: 0 auto; }
+    h1, h2, h3 { margin-top: 0; }
+    .grid-principal { display: grid; grid-template-columns: 360px 1fr; gap: 20px; align-items: start; }
+    .panel { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 14px rgba(0,0,0,0.08); margin-bottom: 20px; }
+    form { display: grid; gap: 12px; }
+    label { display: grid; gap: 6px; font-weight: bold; }
+    input, select, textarea, button { padding: 10px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14px; font-family: inherit; }
+    textarea { resize: vertical; min-height: 70px; }
+    button { border: none; background: #2563eb; color: white; font-weight: bold; cursor: pointer; }
+    button:hover { background: #1d4ed8; }
+    .btn-secundario { background: #475569; }
+    .btn-secundario:hover { background: #334155; }
+    .btn-avanzar { background: #0f766e; }
+    .btn-avanzar:hover { background: #0d5f59; }
+    .btn-cerrar, .btn-eliminar { background: #dc2626; }
+    .btn-cerrar:hover, .btn-eliminar:hover { background: #b91c1c; }
+    .btn-editar { background: #9333ea; }
+    .btn-editar:hover { background: #7e22ce; }
+    .resumen { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .dato-resumen { background: #f8fafc; border: 1px solid #dbe4ee; border-radius: 10px; padding: 12px; }
+    .dato-resumen strong { display: block; font-size: 22px; margin-bottom: 4px; }
+    .zona-incidencias { display: grid; gap: 14px; }
+    .incidencia { border: 2px solid #d1d5db; border-radius: 14px; padding: 16px; background: white; cursor: pointer; transition: 0.2s; }
+    .incidencia:hover { border-color: #2563eb; }
+    .incidencia.seleccionada { border-color: #2563eb; box-shadow: 0 0 0 4px rgba(37,99,235,0.15); }
+    .incidencia-en_progreso { background: #fff7ed; border-color: #f97316; }
+    .incidencia-resuelta    { background: #ecfdf5; border-color: #22c55e; }
+    .incidencia-cerrada     { background: #f1f5f9; border-color: #94a3b8; opacity: 0.75; }
+    .cabecera-inc { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+    .cabecera-inc h3 { margin-bottom: 4px; }
+    .etiquetas { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+    .etiqueta { display: inline-block; padding: 5px 9px; border-radius: 999px; font-size: 12px; font-weight: bold; }
+    .estado-abierta     { background: #e0f2fe; color: #075985; }
+    .estado-en_progreso { background: #ffedd5; color: #9a3412; }
+    .estado-resuelta    { background: #dcfce7; color: #166534; }
+    .estado-cerrada     { background: #e2e8f0; color: #475569; }
+    .tipo-software  { background: #dbeafe; color: #1e40af; }
+    .tipo-hardware  { background: #fee2e2; color: #991b1b; }
+    .tipo-red       { background: #fef3c7; color: #92400e; }
+    .tipo-usuario   { background: #ede9fe; color: #4c1d95; }
+    .prioridad-baja    { background: #dcfce7; color: #166534; }
+    .prioridad-media   { background: #fef3c7; color: #92400e; }
+    .prioridad-alta    { background: #ffedd5; color: #9a3412; }
+    .prioridad-critica { background: #fee2e2; color: #991b1b; font-weight: 900; }
+    .acciones { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    .acciones button { padding: 8px 10px; font-size: 13px; }
+    .linea-info { margin: 6px 0; }
+    .muted { color: #64748b; font-style: italic; }
+    .fila-botones { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <div class="contenedor">
+    <h1>Simulacro 08 — Gestor de incidencias de soporte</h1>
+    <p style="color:#64748b">⏱ Tiempo estimado para esta parte: <strong>70 minutos</strong></p>
+
+    <div class="grid-principal">
+      <div>
+        <section class="panel">
+          <h2>Nueva incidencia</h2>
+          <form id="formIncidencia" autocomplete="off">
+            <label>Título
+              <input id="inpTitulo" type="text" placeholder="Ej: Error al iniciar sesión" required>
+            </label>
+            <label>Tipo
+              <select id="selTipo" required>
+                <option value="software">Software</option>
+                <option value="hardware">Hardware</option>
+                <option value="red" selected>Red</option>
+                <option value="usuario">Usuario</option>
+              </select>
+            </label>
+            <label>Prioridad
+              <select id="selPrioridad" required>
+                <option value="baja">Baja</option>
+                <option value="media" selected>Media</option>
+                <option value="alta">Alta</option>
+                <option value="critica">Crítica</option>
+              </select>
+            </label>
+            <label>Técnico asignado
+              <input id="inpTecnico" type="text" placeholder="Ej: Carlos R." required>
+            </label>
+            <label>Descripción
+              <textarea id="txtDescripcion" placeholder="Describe el problema..."></textarea>
+            </label>
+            <button type="submit">Registrar incidencia</button>
+          </form>
+        </section>
+
+        <section class="panel">
+          <h2>Resumen</h2>
+          <div class="resumen">
+            <div class="dato-resumen"><strong id="totalIncidencias">0</strong>Total</div>
+            <div class="dato-resumen"><strong id="totalActivas">0</strong>Activas</div>
+            <div class="dato-resumen"><strong id="totalResueltas">0</strong>Resueltas / Cerradas</div>
+            <div class="dato-resumen"><strong id="totalCriticas">0</strong>Críticas sin resolver</div>
+          </div>
+          <div class="fila-botones">
+            <button id="btnLimpiarCerradas" type="button" class="btn-secundario">Eliminar cerradas</button>
+          </div>
+        </section>
+      </div>
+
+      <div>
+        <section class="panel">
+          <h2>Incidencias</h2>
+          <p class="muted" id="mensajeVacio">No hay incidencias registradas.</p>
+          <div id="listaIncidencias" class="zona-incidencias"></div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =====================================================
+    // Clase Incidencia
+    // =====================================================
+    class Incidencia {
+      #id;
+      #titulo;
+      #tipo;
+      #prioridad;
+      #tecnico;
+      #estado;
+      #descripcion;
+
+      constructor(id, titulo, tipo, prioridad, tecnico, descripcion) {
+        this.#id = id;
+        this.setTitulo(titulo);
+        this.setTipo(tipo);
+        this.setPrioridad(prioridad);
+        this.setTecnico(tecnico);
+        this.setDescripcion(descripcion);
+        this.#estado = "abierta";
+      }
+
+      getId()         { return this.#id; }
+      getTitulo()     { return this.#titulo; }
+      getTipo()       { return this.#tipo; }
+      getPrioridad()  { return this.#prioridad; }
+      getTecnico()    { return this.#tecnico; }
+      getEstado()     { return this.#estado; }
+      getDescripcion(){ return this.#descripcion; }
+
+      setTitulo(t)     { this.#titulo    = String(t).trim(); }
+      setTipo(t)       { this.#tipo      = t; }
+      setPrioridad(p)  { this.#prioridad = p; }
+      setTecnico(t)    { this.#tecnico   = String(t).trim(); }
+      setEstado(e)     { this.#estado    = e; }
+      setDescripcion(d){
+        const s = String(d).trim();
+        this.#descripcion = s === "" ? "Sin descripción" : s;
+      }
+    }
+
+    // =====================================================
+    // Referencias al DOM
+    // =====================================================
+    const formIncidencia  = document.getElementById("formIncidencia");
+    const inpTitulo       = document.getElementById("inpTitulo");
+    const selTipo         = document.getElementById("selTipo");
+    const selPrioridad    = document.getElementById("selPrioridad");
+    const inpTecnico      = document.getElementById("inpTecnico");
+    const txtDescripcion  = document.getElementById("txtDescripcion");
+    const listaIncidencias= document.getElementById("listaIncidencias");
+    const mensajeVacio    = document.getElementById("mensajeVacio");
+    const totalIncidencias= document.getElementById("totalIncidencias");
+    const totalActivas    = document.getElementById("totalActivas");
+    const totalResueltas  = document.getElementById("totalResueltas");
+    const totalCriticas   = document.getElementById("totalCriticas");
+    const btnLimpiarCerradas = document.getElementById("btnLimpiarCerradas");
+
+    let siguienteId = 1;
+
+    // =====================================================
+    // Funciones auxiliares — YA IMPLEMENTADAS
+    // =====================================================
+    function nombreEstado(e) {
+      return { abierta:"Abierta", en_progreso:"En progreso", resuelta:"Resuelta", cerrada:"Cerrada" }[e] || e;
+    }
+    function siguienteEstado(e) {
+      return { abierta:"en_progreso", en_progreso:"resuelta", resuelta:"abierta" }[e] || "abierta";
+    }
+    function nombreTipo(t) {
+      return { software:"Software", hardware:"Hardware", red:"Red", usuario:"Usuario" }[t] || t;
+    }
+    function nombrePrioridad(p) {
+      return { baja:"Baja", media:"Media", alta:"Alta", critica:"Crítica" }[p] || p;
+    }
+
+    // =====================================================
+    // Creación dinámica de tarjetas
+    // =====================================================
+    function crearTarjetaIncidencia(inc) {
+      // TODO 2:
+      // Crea article.incidencia con data-*:
+      // id, titulo, tipo, prioridad, tecnico, estado, descripcion.
+
+      // TODO 3:
+      // Crea la cabecera (div.cabecera-inc) con:
+      // - h3: "Incidencia #N — Título"
+      // - p.linea-info: "Técnico: X | Tipo: Y"
+
+      // TODO 4:
+      // Crea div.etiquetas con:
+      // - span.etiqueta del estado (clase: estado-abierta, estado-en_progreso…)
+      // - span.etiqueta del tipo (clase: tipo-software, tipo-hardware…)
+      // - span.etiqueta de la prioridad (clase: prioridad-baja, prioridad-critica…)
+
+      // TODO 5:
+      // Crea p.linea-info.muted con la descripción.
+
+      // TODO 6:
+      // Crea div.acciones con cuatro botones:
+      // - data-accion="avanzar"   class="btn-avanzar"   → "▶ Avanzar estado"
+      // - data-accion="editar"    class="btn-editar"    → "✏ Editar desc."
+      // - data-accion="cerrar"    class="btn-cerrar"    → "✕ Cerrar"
+      // - data-accion="eliminar"  class="btn-eliminar"  → "🗑 Eliminar"
+      // Aplica la clase de estado y devuelve el article.
+    }
+
+    // TODO 7:
+    // aplicarClaseEstado(tarjeta):
+    // Elimina incidencia-en_progreso, incidencia-resuelta, incidencia-cerrada.
+    // Lee data-estado y añade la clase correspondiente.
+    function aplicarClaseEstado(tarjeta) {
+
+    }
+
+    // TODO 8:
+    // actualizarTarjetaTrasCambio(tarjeta):
+    // Lee data-estado y data-descripcion.
+    // Actualiza span de estado (texto + clase estado-X).
+    // Actualiza párrafo de descripción.
+    // Llama a aplicarClaseEstado.
+    function actualizarTarjetaTrasCambio(tarjeta) {
+
+    }
+
+    // TODO 9:
+    // actualizarResumen():
+    // Cuenta total, activas (abierta + en_progreso), resueltas+cerradas,
+    // críticas sin resolver (prioridad=critica y estado != resuelta ni cerrada).
+    // Muestra/oculta mensajeVacio.
+    function actualizarResumen() {
+
+    }
+
+    // TODO 10:
+    // seleccionarIncidencia(tarjeta):
+    // Quita "seleccionada" de todas. Añade a la recibida.
+    function seleccionarIncidencia(tarjeta) {
+
+    }
+
+    // TODO 11:
+    // avanzarEstado(tarjeta):
+    // Si data-estado es "cerrada" → no hacer nada.
+    // Calcular siguiente → guardar → actualizarTarjetaTrasCambio → actualizarResumen.
+    function avanzarEstado(tarjeta) {
+
+    }
+
+    // TODO 12:
+    // editarDescripcion(tarjeta):
+    // prompt con la descripción actual.
+    // Cancelar → sin cambios. Aceptar → guardar (o "Sin descripción" si vacío).
+    // Llamar a actualizarTarjetaTrasCambio.
+    function editarDescripcion(tarjeta) {
+
+    }
+
+    // TODO 13:
+    // cerrarIncidencia(tarjeta):
+    // data-estado = "cerrada".
+    // Llamar a actualizarTarjetaTrasCambio y actualizarResumen.
+    function cerrarIncidencia(tarjeta) {
+
+    }
+
+    // TODO 14:
+    // eliminarIncidencia(tarjeta):
+    // removeChild, luego actualizarResumen.
+    function eliminarIncidencia(tarjeta) {
+
+    }
+
+    // =====================================================
+    // Formulario
+    // =====================================================
+    formIncidencia.addEventListener("submit", function(event) {
+      event.preventDefault();
+
+      // TODO 15: Recoge: titulo, tipo, prioridad, tecnico, descripcion.
+
+      // TODO 16: Crea new Incidencia(siguienteId, ...).
+
+      // TODO 17: Crea tarjeta HTML e insértala en listaIncidencias.
+
+      // TODO 18:
+      // - siguienteId++
+      // - formIncidencia.reset()
+      // - selPrioridad.value = "media"
+      // - inpTitulo.focus()
+      // - actualizarResumen()
+    });
+
+    // =====================================================
+    // Delegación de eventos
+    // =====================================================
+    // TODO 19:
+    // Delegación en listaIncidencias:
+    // 1. closest(".incidencia") → tarjeta
+    // 2. Si no hay tarjeta → return
+    // 3. Si data-accion → stopPropagation + ejecutar + return
+    //    Acciones: avanzar, editar, cerrar, eliminar
+    // 4. Si no → seleccionarIncidencia(tarjeta)
+    listaIncidencias.addEventListener("click", function(event) {
+
+    });
+
+    // =====================================================
+    // Limpiar cerradas
+    // =====================================================
+    // TODO 20:
+    // Localiza .incidencia[data-estado='cerrada'], elimínalas, actualizarResumen.
+    btnLimpiarCerradas.addEventListener("click", function() {
+
+    });
+
+    actualizarResumen();
+  </script>
+</body>
+</html>
