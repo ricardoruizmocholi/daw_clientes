@@ -134,6 +134,7 @@
       getTipoHabitacion() { return this.#tipoHabitacion; }
       getPrecioNoche()    { return this.#precioNoche; }
       getNoches()         { return this.#noches; }
+      get some()          { return this.#estado; } // Para compatibilidad interna si fuera necesario
       getEstado()         { return this.#estado; }
       getObservaciones()  { return this.#observaciones; }
 
@@ -177,12 +178,23 @@
       return Number(n).toFixed(2) + " €";
     }
 
+    // Función auxiliar para solucionar el TODO 6 de forma limpia
+    function crearBoton(texto, accion, clase) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = clase;
+      btn.dataset.accion = accion;
+      btn.textContent = texto;
+      return btn;
+    }
+
     // TODO 1:
     // Implementa obtenerPrecioSeleccionado().
     // Obtén la opción seleccionada en selTipo,
     // lee su atributo data-precio y devuélvelo como número.
     function obtenerPrecioSeleccionado() {
-
+      const precio = Number(selTipo.options[selTipo.selectedIndex].dataset.precio);
+      return precio;
     }
 
     function nombreEstado(e) {
@@ -206,10 +218,34 @@
       // Añádele la clase "reserva".
       // Guarda en data-*: id, huesped, tipo, precio, noches, estado, observaciones.
 
+      const article = document.createElement("article");
+      article.classList.add("reserva");
+      article.dataset.id = reserva.getId();
+      article.dataset.huesped      = reserva.getHuesped();
+      article.dataset.tipo         = reserva.getTipoHabitacion();
+      article.dataset.precio       = reserva.getPrecioNoche();
+      article.dataset.noches       = reserva.getNoches();
+      article.dataset.estado       = reserva.getEstado();
+      article.dataset.observaciones= reserva.getObservaciones();
+
       // TODO 3:
       // Crea la cabecera (div.cabecera-reserva) con:
       // - h3 con el nombre del huésped y el nº de reserva
       // - p con el tipo de habitación, precio/noche y noches
+      const cabecera = document.createElement("div");
+      cabecera.classList.add("cabecera-reserva");
+      const infoDiv = document.createElement("div");
+      
+      const h3 = document.createElement("h3");
+      h3.textContent = `Reserva a ${reserva.getHuesped()} - Número #${reserva.getId()}`; // Corrección: Añadidos ()
+
+      const pInfo = document.createElement("p");
+      pInfo.classList.add("linea-info");
+      pInfo.textContent = `${nombreTipo(reserva.getTipoHabitacion())} · ${formatearEuros(reserva.getPrecioNoche())}/noche · ${reserva.getNoches()} noche(s)`;
+     
+      infoDiv.appendChild(h3); 
+      infoDiv.appendChild(pInfo); 
+      cabecera.appendChild(infoDiv);
 
       // TODO 4:
       // Crea el div.etiquetas con:
@@ -217,8 +253,31 @@
       // - span.etiqueta del tipo de habitación (clase: tipo-individual, tipo-doble, tipo-suite)
       // - span.etiqueta con el importe total formateado
 
+      const etiquetas = document.createElement("div");
+      etiquetas.classList.add("etiquetas");
+
+      const spanEstado = document.createElement("span");
+      spanEstado.classList.add("etiqueta", "estado-" + reserva.getEstado()); // Corrección: clase 'etiqueta'
+      spanEstado.textContent = nombreEstado(reserva.getEstado());
+      
+      const spanTipo = document.createElement("span");
+      spanTipo.classList.add("etiqueta", "tipo-" + reserva.getTipoHabitacion()); // Corrección: clase 'tipo-X'
+      spanTipo.textContent = nombreTipo(reserva.getTipoHabitacion());
+      
+      const spanImporte = document.createElement("span");
+      spanImporte.classList.add("etiqueta");
+      spanImporte.textContent = formatearEuros(reserva.getImporteTotal());
+      
+      etiquetas.appendChild(spanEstado); 
+      etiquetas.appendChild(spanTipo); 
+      etiquetas.appendChild(spanImporte);
+
       // TODO 5:
       // Crea un párrafo.linea-info.muted con las observaciones.
+
+      const pObs = document.createElement("p");
+      pObs.classList.add("linea-info", "muted");
+      pObs.textContent = reserva.getObservaciones();
 
       // TODO 6:
       // Crea el div.acciones con cuatro botones:
@@ -228,6 +287,21 @@
       // - data-accion="eliminar"        class="btn-eliminar"  → "🗑 Eliminar"
       // Aplica la clase visual de estado al article.
       // Devuelve el article.
+
+      const acciones = document.createElement("div"); 
+      acciones.classList.add("acciones");
+      acciones.appendChild(crearBoton(" Avanzar estado", "cambiar-estado", "btn-confirmar"));
+      acciones.appendChild(crearBoton(" Editar obs.", "editar", "btn-editar"));
+      acciones.appendChild(crearBoton(" Cancelar", "cancelar", "btn-cancelar"));
+      acciones.appendChild(crearBoton(" Eliminar", "eliminar", "btn-eliminar"));
+
+      article.appendChild(cabecera);
+      article.appendChild(etiquetas);
+      article.appendChild(pObs); 
+      article.appendChild(acciones);
+      
+      aplicarClaseEstado(article);
+      return article;
     }
 
     // =====================================================
@@ -241,7 +315,13 @@
     //   "checkin"    → reserva-checkin
     //   "cancelada"  → reserva-cancelada
     function aplicarClaseEstado(tarjeta) {
+      tarjeta.classList.remove("reserva-confirmada", "reserva-checkin", "reserva-cancelada");
 
+      const e = tarjeta.dataset.estado;
+
+      if (e === "confirmada") tarjeta.classList.add("reserva-confirmada");
+      if (e === "checkin")    tarjeta.classList.add("reserva-checkin");
+      if (e === "cancelada")  tarjeta.classList.add("reserva-cancelada");
     }
 
     // TODO 8:
@@ -251,7 +331,19 @@
     // Actualiza el párrafo de observaciones.
     // Llama a aplicarClaseEstado(tarjeta).
     function actualizarTarjetaTrasCambio(tarjeta) {
+      const estado = tarjeta.dataset.estado;
+      const obs = tarjeta.dataset.observaciones;
 
+      const spanEstado = tarjeta.querySelector(".etiqueta[class*='estado-']");
+      if (spanEstado) {
+        spanEstado.className = "etiqueta estado-" + estado;
+        spanEstado.textContent = nombreEstado(estado);
+      }
+
+      const pObs = tarjeta.querySelector(".muted");
+      if (pObs) pObs.textContent = obs;
+
+      aplicarClaseEstado(tarjeta);
     }
 
     // =====================================================
@@ -263,7 +355,24 @@
     // Suma ingresos: precioNoche * noches de las NO canceladas.
     // Muestra/oculta mensajeVacio.
     function actualizarResumen() {
+      const tarjetas = listaReservas.querySelectorAll(".reserva");
+      let activas = 0, canceladas = 0, ingresos = 0;
+      
+      tarjetas.forEach(tarjeta => {
+        if (tarjeta.dataset.estado === "cancelada") {
+          canceladas++;
+        } else {
+          activas++; 
+          ingresos += Number(tarjeta.dataset.precio) * Number(tarjeta.dataset.noches);
+        }
+      });
 
+      totalReservas.textContent = tarjetas.length;
+      totalActivas.textContent = activas; // Corrección: modificado textContent
+      totalCanceladas.textContent = canceladas; // Corrección: modificado textContent
+      ingresosEstimados.textContent = formatearEuros(ingresos);
+
+      mensajeVacio.style.display = tarjetas.length === 0 ? "block" : "none";
     }
 
     // TODO 10:
@@ -271,7 +380,8 @@
     // Elimina "seleccionada" de todas las tarjetas.
     // Añade "seleccionada" a la recibida.
     function seleccionarReserva(tarjeta) {
-
+      listaReservas.querySelectorAll(".reserva").forEach(r => { r.classList.remove("seleccionada") }); // Corrección del selector
+      tarjeta.classList.add("seleccionada");
     }
 
     // =====================================================
@@ -283,7 +393,11 @@
     // Si no: calcular siguiente estado con siguienteEstado(),
     // guardar en data-estado, llamar a actualizarTarjetaTrasCambio y actualizarResumen.
     function cambiarEstadoReserva(tarjeta) {
+      if (tarjeta.dataset.estado === "cancelada") return;
+      tarjeta.dataset.estado = siguienteEstado(tarjeta.dataset.estado);
 
+      actualizarTarjetaTrasCambio(tarjeta);
+      actualizarResumen();
     }
 
     // TODO 12:
@@ -293,7 +407,10 @@
     // Si acepta → guardar texto (o "Sin observaciones" si vacío),
     // actualizar data-observaciones, llamar a actualizarTarjetaTrasCambio.
     function editarObservaciones(tarjeta) {
-
+      const nuevo = prompt("Editar observaciones:", tarjeta.dataset.observaciones);
+      if (nuevo === null) return;
+      tarjeta.dataset.observaciones = nuevo.trim() === "" ? "Sin observaciones" : nuevo.trim();
+      actualizarTarjetaTrasCambio(tarjeta);
     }
 
     // TODO 13:
@@ -301,14 +418,17 @@
     // data-estado = "cancelada".
     // Llamar a actualizarTarjetaTrasCambio y actualizarResumen.
     function cancelarReserva(tarjeta) {
-
+      tarjeta.dataset.estado = "cancelada";
+      actualizarTarjetaTrasCambio(tarjeta);
+      actualizarResumen();
     }
 
     // TODO 14:
     // eliminarReserva(tarjeta):
     // removeChild sobre el padre, luego actualizarResumen.
     function eliminarReserva(tarjeta) {
-
+      listaReservas.removeChild(tarjeta);
+      actualizarResumen();
     }
 
     // =====================================================
@@ -320,10 +440,18 @@
       // TODO 15: Recoge los datos del formulario:
       // huesped, tipoHabitacion, precioNoche (obtenerPrecioSeleccionado),
       // noches, observaciones.
+      const huesped       = inpHuesped.value;
+      const tipo         = selTipo.value;
+      const precio       = obtenerPrecioSeleccionado();
+      const noches       = inpNoches.value;
+      const observaciones= txtObservaciones.value;
 
       // TODO 16: Crea un nuevo objeto Reserva con siguienteId y los datos.
-
+      const reserva = new Reserva(siguienteId, huesped, tipo, precio, noches, observaciones);
+      
       // TODO 17: Crea la tarjeta HTML e insértala en listaReservas.
+      const tarjeta = crearTarjetaReserva(reserva); // Corrección de la asignación e inyección
+      listaReservas.appendChild(tarjeta);
 
       // TODO 18:
       // - Incrementa siguienteId
@@ -331,6 +459,11 @@
       // - inpNoches.value = 1
       // - inpHuesped.focus()
       // - actualizarResumen()
+      siguienteId++;
+      formReserva.reset();
+      inpNoches.value = 1;
+      inpHuesped.focus();
+      actualizarResumen();
     });
 
     // =====================================================
@@ -344,7 +477,21 @@
     //    Acciones: cambiar-estado, editar, cancelar, eliminar
     // 4. Si no hay data-accion → seleccionarReserva(tarjeta)
     listaReservas.addEventListener("click", function(event) {
+      const tarjeta = event.target.closest(".reserva"); // Corrección de nombre de variable (singular)
+      if (!tarjeta) return;
 
+      const boton = event.target.closest("button[data-accion]"); // Corrección para delegar clics de forma precisa
+      if (boton) {
+        event.stopPropagation();
+        const accion = boton.dataset.accion;
+        if (accion === "cambiar-estado") cambiarEstadoReserva(tarjeta);
+        if (accion === "editar")         editarObservaciones(tarjeta);
+        if (accion === "cancelar")       cancelarReserva(tarjeta);
+        if (accion === "eliminar")       eliminarReserva(tarjeta);
+        return;
+      }
+
+      seleccionarReserva(tarjeta);
     });
 
     // =====================================================
@@ -355,7 +502,9 @@
     // Elimínalos del contenedor.
     // Actualiza el resumen.
     btnLimpiarCanceladas.addEventListener("click", function() {
-
+      listaReservas.querySelectorAll(".reserva[data-estado='cancelada']")
+        .forEach(r => listaReservas.removeChild(r));
+      actualizarResumen();
     });
 
     actualizarResumen();
