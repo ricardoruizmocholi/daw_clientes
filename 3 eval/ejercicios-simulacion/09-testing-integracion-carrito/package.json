@@ -1,0 +1,11 @@
+{
+  "name": "09-testing-integracion-carrito",
+  "version": "1.0.0",
+  "description": "Tests de integración Jest para el carrito de compras",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0"
+  }
+}
