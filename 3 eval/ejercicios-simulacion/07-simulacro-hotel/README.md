@@ -35,3 +35,68 @@
 - [ ] `actualizarResumen()` se llama después de cada acción
 - [ ] Cada función JSDoc tiene `@param`, `@returns` y `@example`
 - [ ] Los tests cubren casos válidos, inválidos y errores con `toThrow`
+
+---
+
+## Sintaxis clave utilizada en este simulacro
+
+### Leer data-precio de un `<option>` seleccionado
+```js
+// HTML: <option value="doble" data-precio="129">Doble — 129 €/noche</option>
+const opcion = selHabitacion.options[selHabitacion.selectedIndex];
+const precio = Number(opcion.dataset.precio);   // "129" → 129
+```
+
+### Clase de estado terminal (no avanzar)
+```js
+function avanzarEstado(tarjeta) {
+  if (tarjeta.dataset.estado === "cancelada") return;  // terminal: bloquear
+  tarjeta.dataset.estado = siguienteEstado(tarjeta.dataset.estado);
+  actualizarTarjetaTrasCambio(tarjeta);
+  actualizarResumen();
+}
+```
+
+### Calcular ingresos estimados en el resumen
+```js
+function actualizarResumen() {
+  const tarjetas = listaReservas.querySelectorAll(".reserva");
+  let ingresos = 0;
+
+  tarjetas.forEach(t => {
+    const estado = t.dataset.estado;
+    if (estado !== "cancelada") {
+      ingresos += Number(t.dataset.precioNoche) * Number(t.dataset.noches);
+    }
+  });
+  document.getElementById("ingresosEstimados").textContent = ingresos + " €";
+}
+```
+
+### JSDoc con @typedef para objeto de retorno
+```js
+/**
+ * @typedef  {Object} ResumenReserva
+ * @property {number} importe Importe base sin IVA.
+ * @property {number} iva     Importe del IVA aplicado.
+ * @property {number} total   Total con IVA incluido.
+ */
+
+/**
+ * Calcula el resumen de una reserva.
+ * @param {number} precioNoche Precio por noche.
+ * @param {number} noches      Número de noches.
+ * @param {string} tipo        Tipo de habitación.
+ * @returns {ResumenReserva}
+ * @throws {Error} Si el número de noches no es válido.
+ */
+function calcularResumen(precioNoche, noches, tipo) { ... }
+```
+
+### Tests con toThrow y mensaje exacto
+```js
+test("noches=0 lanza error", () => {
+  expect(() => calcularResumen(89, 0, "individual"))
+    .toThrow("El número de noches no es válido (debe ser entre 1 y 30).");
+});
+```

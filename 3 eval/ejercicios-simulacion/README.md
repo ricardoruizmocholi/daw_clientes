@@ -1,7 +1,7 @@
 # Ejercicios de Simulación — 3ª Evaluación
 
 Práctica progresiva para preparar el examen. Cada ejercicio añade un nuevo patrón.
-Intenta resolver el `ejercicio.html` antes de mirar `solucion.html`.
+Intenta resolver el `ejercicio.html` o `ejercicio.test.js` antes de mirar la solución.
 
 ## Mapa de ejercicios
 
@@ -10,9 +10,13 @@ Intenta resolver el `ejercicio.html` antes de mirar `solucion.html`.
 | 01 | [Clase con campos privados](01-clase-campos-privados/) | ⭐ Fácil | `#campos`, constructor, getters, setters con validación |
 | 02 | [DOM dinámico y data-*](02-dom-dinamico-dataset/) | ⭐ Fácil | `createElement`, `dataset`, `classList` |
 | 03 | [Formulario + Clase + DOM](03-formulario-clase-dom/) | ⭐⭐ Medio | `submit`, `preventDefault`, `reset`, `focus` + clase + tarjetas |
-| 04 | [Testing con Jest](04-testing-jest/) | ⭐⭐ Medio | `describe`, `test`, `expect`, `toBe`, `toThrow`, `beforeEach` |
+| 04 | [Testing unitario Jest](04-testing-jest/) | ⭐⭐ Medio | `describe`, `test`, `expect`, `toBe`, `toThrow`, `beforeEach` |
 | 05 | [Delegación de eventos](05-delegacion-eventos/) | ⭐⭐⭐ Difícil | `closest()`, `data-accion`, `classList.toggle`, resumen |
 | 06 | [Simulacro examen completo](06-simulacro-completo/) | ⭐⭐⭐⭐ Examen | Todos los temas: clase + DOM + formulario + delegación + resumen |
+| 07 | [Simulacro Hotel](07-simulacro-hotel/) | ⭐⭐⭐⭐ Examen | DOM + JSDoc + Testing unitario — Gestor de reservas |
+| 08 | [Simulacro Incidencias](08-simulacro-incidencias/) | ⭐⭐⭐⭐ Examen | DOM + JSDoc + Testing unitario — Soporte técnico |
+| 09 | [Testing integración: Carrito](09-testing-integracion-carrito/) | ⭐⭐⭐ Medio | `beforeEach`, pipeline de funciones, `toEqual`, `toHaveLength` |
+| 10 | [Testing integración: Pedidos](10-testing-integracion-pedidos/) | ⭐⭐⭐⭐ Difícil | Pipeline encapsulado, errores propagados, estadísticas agregadas |
 
 ## Patrón del examen (repite en cada ejercicio)
 
@@ -41,12 +45,20 @@ Intenta resolver el `ejercicio.html` antes de mirar `solucion.html`.
 - [ ] Clases CSS gestionadas con `classList.add/remove/toggle`
 - [ ] `actualizarResumen()` se llama después de cada acción
 
-## Flujo testing (ejercicio 04)
+## Flujo testing (ejercicios 04, 09, 10)
 
 ```bash
-cd 04-testing-jest
-npm init -y
-npm install --save-dev jest
-# En package.json → "test": "jest"
-npm test
+# Cualquier carpeta de testing ya tiene package.json listo
+cd 04-testing-jest          # o 09-testing-integracion-carrito / 10-testing-integracion-pedidos
+npm install                 # instala Jest
+npm test                    # ejecuta todos los *.test.js
 ```
+
+## Tests unitarios vs. tests de integración
+
+| | Unitario (04) | Integración (09 y 10) |
+|---|---|---|
+| Qué testa | Una función aislada | Varias funciones en cadena |
+| Estado compartido | Raramente | `beforeEach(() => { estado = [] })` |
+| Fallo en función interna | No aplica | El error sube al test automáticamente |
+| Matcher típico | `toBe` | `toEqual`, `toHaveLength`, `toBeCloseTo` |

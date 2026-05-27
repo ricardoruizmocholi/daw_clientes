@@ -45,3 +45,67 @@
 - [ ] El formulario hace `preventDefault()` + `reset()` + `focus()`
 - [ ] La delegación usa `closest(".incidencia")` + `dataset.accion`
 - [ ] Los 6 `describe` de testing tienen al menos 3 tests cada uno
+
+---
+
+## Sintaxis clave utilizada en este simulacro
+
+### Múltiples clases de etiqueta (estado + tipo + prioridad)
+```js
+// Cada tarjeta tiene 3 etiquetas con clases dinámicas
+const spanEstado    = document.createElement("span");
+spanEstado.classList.add("etiqueta", `estado-${inc.getEstado()}`);
+spanEstado.textContent = nombreEstado(inc.getEstado());
+
+const spanTipo      = document.createElement("span");
+spanTipo.classList.add("etiqueta", `tipo-${inc.getTipo()}`);
+
+const spanPrioridad = document.createElement("span");
+spanPrioridad.classList.add("etiqueta", `prioridad-${inc.getPrioridad()}`);
+```
+
+### Actualizar solo el span de estado sin recrear la tarjeta
+```js
+function actualizarTarjetaTrasCambio(tarjeta) {
+  const estado = tarjeta.dataset.estado;
+  const spanEstado = tarjeta.querySelector(".etiquetas .etiqueta:first-child");
+
+  // Quitar solo la clase estado-* (mantener la clase "etiqueta")
+  [...spanEstado.classList].forEach(c => {
+    if (c.startsWith("estado-")) spanEstado.classList.remove(c);
+  });
+  spanEstado.classList.add(`estado-${estado}`);
+  spanEstado.textContent = nombreEstado(estado);
+
+  tarjeta.querySelector("p.muted").textContent = tarjeta.dataset.descripcion;
+  aplicarClaseEstado(tarjeta);
+}
+```
+
+### Conteo de críticas sin resolver en el resumen
+```js
+tarjetas.forEach(t => {
+  const { estado, prioridad } = t.dataset;
+  if (estado === "abierta" || estado === "en_progreso") activas++;
+  if (estado === "resuelta" || estado === "cerrada")    resueltas++;
+  // Crítica sin resolver = prioridad crítica Y no terminada
+  if (prioridad === "critica" && estado !== "resuelta" && estado !== "cerrada") criticas++;
+});
+```
+
+### Función formatearTiempo con condicional encadenado
+```js
+function formatearTiempo(horas) {
+  if (horas < 1)   return (horas * 60) + " min";   // 0.5 → "30 min"
+  if (horas === 1) return "1 hora";
+  return horas + " horas";                           // 4 → "4 horas"
+}
+```
+
+### Test con toEqual para el objeto ResumenTiempos
+```js
+test("alta, 50 → objeto correcto", () => {
+  expect(calcularResumenTiempos("alta", 50))
+    .toEqual({ tiempoEstimado: 4, coste: 200, descripcionTiempo: "4 horas" });
+});
+```

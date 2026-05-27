@@ -38,3 +38,30 @@ console.log(titulo.children);    // HTMLCollection solo con elementos hijo
 - `nodeType === 1` = elemento, `nodeType === 3` = texto
 - `childNodes` devuelve NodeList (incluye texto); `children` devuelve HTMLCollection (solo etiquetas)
 - Cada nodo tiene `parentNode`, `firstChild`, `lastChild`, `nextSibling`, `previousSibling`
+
+---
+
+## Cómo se usa esto en los ejercicios de simulación
+
+En los ejercicios del examen no navegas por el árbol con `firstChild` o `nextSibling`; en cambio usas selectores y propiedades de colección. Estas son las formas concretas que aparecen:
+
+```js
+// Contar todos los elementos de un tipo para el resumen
+const tarjetas = document.querySelectorAll(".incidencia");  // NodeList
+tarjetas.forEach(t => { /* recorrer */ });
+console.log(tarjetas.length);  // cuántas hay
+
+// Limpiar un contenedor eliminando todos sus hijos
+const lista = document.getElementById("listaIncidencias");
+while (lista.firstElementChild) {
+  lista.removeChild(lista.firstElementChild);
+}
+
+// Encontrar el padre de un nodo para eliminarlo
+boton.addEventListener("click", () => {
+  const tarjeta = boton.closest(".incidencia");  // sube por el árbol
+  tarjeta.parentElement.removeChild(tarjeta);    // parentElement = el contenedor
+});
+```
+
+**Ejercicios relacionados:** [02 — DOM dinámico](../ejercicios-simulacion/02-dom-dinamico-dataset/) · [03 — Formulario + DOM](../ejercicios-simulacion/03-formulario-clase-dom/)

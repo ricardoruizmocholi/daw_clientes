@@ -74,3 +74,57 @@ describe('calcularIVA', () => {
 - `toBe` para primitivos; `toEqual` para objetos y arrays; `toThrow` para errores
 - Para generar docs: `npm install --save-dev jsdoc` → `npx jsdoc archivo.js -d docs/`
 - `@param {tipo} nombre Descripción` · `@returns {tipo} Descripción` · `@example` son las etiquetas más importantes
+
+---
+
+## Tests unitarios vs. tests de integración
+
+Ambos usan la misma sintaxis de Jest; la diferencia está en **qué se testa**:
+
+| | Unitario | Integración |
+|---|---|---|
+| Alcance | Una sola función | Varias funciones encadenadas |
+| `beforeEach` | Opcional | Casi siempre (para resetear estado) |
+| Matcher típico | `toBe` | `toEqual`, `toHaveLength`, `toBeCloseTo` |
+| Ejercicio | 04, parte testing de 07 y 08 | 09 y 10 |
+
+```js
+// TEST UNITARIO — prueba calcularIva de forma aislada
+test("21% sobre 100 → 21", () => {
+  expect(calcularIva(100, 21)).toBe(21);
+});
+
+// TEST DE INTEGRACIÓN — prueba el pipeline crearProducto → agregarAlCarrito → calcularSubtotal
+describe("Integración carrito", () => {
+  let carrito;
+  beforeEach(() => { carrito = []; });   // resetear estado entre tests
+
+  test("añadir y calcular", () => {
+    const prod = crearProducto("Teclado", 50, 10);
+    agregarAlCarrito(carrito, prod, 2);              // usa la salida de crearProducto
+    expect(calcularSubtotal(carrito)).toBe(100);     // usa el carrito mutado
+  });
+});
+```
+
+## JSDoc con @typedef — para funciones que devuelven objetos
+
+```js
+/**
+ * @typedef  {Object} ResumenTiempos
+ * @property {number} tiempoEstimado    Horas estimadas según la prioridad.
+ * @property {number} coste             Coste total (horas × tarifa).
+ * @property {string} descripcionTiempo Tiempo formateado como texto.
+ */
+
+/**
+ * Calcula el resumen completo de tiempos y costes.
+ * @param {string} prioridad   Prioridad de la incidencia.
+ * @param {number} tarifaHora  Tarifa por hora (>= 0).
+ * @returns {ResumenTiempos}
+ * @throws {Error} Si tarifaHora es negativa.
+ */
+function calcularResumenTiempos(prioridad, tarifaHora) { ... }
+```
+
+**Ejercicios relacionados:** [04 — Testing unitario](../ejercicios-simulacion/04-testing-jest/) · [09 — Integración carrito](../ejercicios-simulacion/09-testing-integracion-carrito/) · [10 — Integración pedidos](../ejercicios-simulacion/10-testing-integracion-pedidos/) · [07 JSDoc](../ejercicios-simulacion/07-simulacro-hotel/) · [08 JSDoc](../ejercicios-simulacion/08-simulacro-incidencias/)

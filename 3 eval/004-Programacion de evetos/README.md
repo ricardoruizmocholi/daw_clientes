@@ -66,3 +66,52 @@ tienda.addEventListener('click', function(event) {
 - `data-action="add"` en HTML → `element.dataset.action` en JS
 - `classList.toggle('clase')` es ideal para mostrar/ocultar con CSS sin lógica extra
 - `stopPropagation()` evita que el evento suba; `preventDefault()` evita el comportamiento del navegador
+
+---
+
+## Código exacto del examen — delegación completa
+
+Este bloque aparece en todos los simulacros (06, 07, 08). Apréndetelo:
+
+```js
+// Un solo listener en el contenedor
+listaIncidencias.addEventListener("click", function(event) {
+
+  // PASO 1: ¿estamos dentro de una tarjeta?
+  const tarjeta = event.target.closest(".incidencia");
+  if (!tarjeta) return;  // clic en zona vacía → ignorar
+
+  // PASO 2: ¿se pulsó un botón con data-accion?
+  const accion = event.target.dataset.accion;
+  if (accion) {
+    event.stopPropagation();               // evitar que active el seleccionar
+    if (accion === "avanzar")  avanzarEstado(tarjeta);
+    if (accion === "editar")   editarDescripcion(tarjeta);
+    if (accion === "cerrar")   cerrarIncidencia(tarjeta);
+    if (accion === "eliminar") eliminarIncidencia(tarjeta);
+    return;
+  }
+
+  // PASO 3: clic en la tarjeta (no en botón) → seleccionar
+  seleccionarIncidencia(tarjeta);
+});
+```
+
+```html
+<!-- En el HTML, los botones declaran su acción -->
+<button type="button" data-accion="avanzar" class="btn-avanzar">▶ Avanzar</button>
+<button type="button" data-accion="eliminar" class="btn-eliminar">🗑 Eliminar</button>
+```
+
+## Formulario — los tres pasos obligatorios
+
+```js
+form.addEventListener("submit", function(event) {
+  event.preventDefault();   // 1. Evitar recarga
+  // ... crear objeto y tarjeta ...
+  form.reset();             // 2. Limpiar campos
+  primerCampo.focus();      // 3. Foco al primer input para el siguiente registro
+});
+```
+
+**Ejercicios relacionados:** [05 — Delegación](../ejercicios-simulacion/05-delegacion-eventos/) · [06 — Simulacro completo](../ejercicios-simulacion/06-simulacro-completo/) · [07](../ejercicios-simulacion/07-simulacro-hotel/) · [08](../ejercicios-simulacion/08-simulacro-incidencias/)
